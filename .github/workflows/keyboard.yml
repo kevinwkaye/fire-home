@@ -1,0 +1,28 @@
+name: Fetch HeliBoard keyboard
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [".github/workflows/keyboard.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download the latest HeliBoard release APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view -R Helium314/HeliBoard --json tagName,assets --jq '.tagName, (.assets[].name)'
+          gh release download -R Helium314/HeliBoard -p '*release.apk' -O HeliBoard.apk
+          ls -la HeliBoard.apk
+      - name: Publish to the "keyboard" release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete keyboard -R ${{ github.repository }} --yes --cleanup-tag || true
+          gh release create keyboard HeliBoard.apk -R ${{ github.repository }} --title "HeliBoard keyboard" --notes "Copied from Helium314/HeliBoard"
