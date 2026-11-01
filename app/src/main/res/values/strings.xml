@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hijack_desc">Sends the Home button to Fire Home instead of Amazon\'s home screen.</string>
+</resources>
