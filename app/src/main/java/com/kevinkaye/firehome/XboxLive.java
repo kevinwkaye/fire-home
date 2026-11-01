@@ -112,6 +112,16 @@ final class XboxLive {
 
     void media(String cmd) { command("Media", cmd, new JSONObject()); }
 
+    void wake() {
+        command("Power", "WakeUp", new JSONObject());
+        consoleOn = true;
+    }
+
+    void off() {
+        command("Power", "TurnOff", new JSONObject());
+        consoleOn = false;
+    }
+
     void power() {
         if (consoleOn) {
             command("Power", "TurnOff", new JSONObject());

@@ -14,6 +14,9 @@ public class MainActivity extends Activity {
     private WebView web;
     private SamsungTv tv;
     private XboxLive xbox;
+    private Routines routines;
+    private Updater updater;
+    private long lastUpdateCheck;
 
     /** Sign-in finished (code may be null if it was cancelled). */
     static void onXboxCode(String code) {
@@ -29,7 +32,9 @@ public class MainActivity extends Activity {
         current = this;
         tv = new SamsungTv(this, (state, detail) -> HomeWeb.pushStatus(web, state, detail));
         xbox = new XboxLive(this, (state, detail) -> HomeWeb.pushXbox(web, state, detail));
-        web = HomeWeb.create(this, false, tv, xbox, night -> {
+        routines = new Routines(this, tv, xbox, text -> HomeWeb.pushToast(web, text));
+        updater = new Updater(this, (state, detail) -> HomeWeb.pushUpdate(web, state, detail));
+        web = HomeWeb.create(this, false, tv, xbox, routines, updater, night -> {
             WindowManager.LayoutParams lp = getWindow().getAttributes();
             lp.screenBrightness = night ? 0.05f : WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
             getWindow().setAttributes(lp);
@@ -48,6 +53,12 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         HomeHijack.homeVisible();
+        // Look for a new build at most every six hours.
+        long now = System.currentTimeMillis();
+        if (updater != null && now - lastUpdateCheck > 6 * 3600_000L) {
+            lastUpdateCheck = now;
+            updater.check();
+        }
         if (web != null) web.evaluateJavascript("window.onResumed && window.onResumed()", null);
     }
 

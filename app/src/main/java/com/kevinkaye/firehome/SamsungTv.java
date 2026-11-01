@@ -19,7 +19,10 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -27,8 +30,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
@@ -58,6 +63,7 @@ final class SamsungTv {
             .pingInterval(20, TimeUnit.SECONDS)
             .build();
 
+    private final Map<String, String> apps = new LinkedHashMap<>();
     private WebSocket socket;
     private volatile boolean connected;
     private volatile boolean connecting;
@@ -172,6 +178,16 @@ final class SamsungTv {
                         connecting = false;
                         status.onStatus("connected", "");
                         io.execute(() -> rememberMac(ip));
+                    } else if ("ed.installedApp.get".equals(event)) {
+                        JSONObject data = o.optJSONObject("data");
+                        org.json.JSONArray list = data == null ? null : data.optJSONArray("data");
+                        if (list != null) synchronized (apps) {
+                            apps.clear();
+                            for (int i = 0; i < list.length(); i++) {
+                                JSONObject a = list.optJSONObject(i);
+                                if (a != null) apps.put(a.optString("name"), a.optString("appId"));
+                            }
+                        }
                     } else if ("ms.channel.unauthorized".equals(event)) {
                         connected = false;
                         connecting = false;
@@ -302,6 +318,152 @@ final class SamsungTv {
             }
         } catch (Exception ignored) {}
         return null;
+    }
+
+
+    // --- routines support (call these off the main thread) ---
+
+    String ip() { return prefs.getString("tv_ip", null); }
+
+    /** Make sure the TV is on and connected, waking it if needed. Blocks up to timeoutMs. */
+    boolean ensureOn(long timeoutMs) {
+        if (connected) return true;
+        long end = System.currentTimeMillis() + timeoutMs;
+        String mac = prefs.getString("tv_mac", null);
+        long nextTry = 0;
+        while (System.currentTimeMillis() < end) {
+            if (connected) return true;
+            if (System.currentTimeMillis() >= nextTry) {
+                if (mac != null) wake(mac);
+                connect();
+                nextTry = System.currentTimeMillis() + 3000;
+            }
+            sleep(400);
+        }
+        return connected;
+    }
+
+    /** Send a key several times with a gap, e.g. to set the volume. */
+    void repeat(String key, int times, long gapMs) {
+        for (int i = 0; i < times && connected; i++) {
+            send(key);
+            sleep(gapMs);
+        }
+    }
+
+    /** Set the volume to a known level: all the way down, then up n steps. */
+    void setVolume(int level) {
+        repeat("KEY_VOLDOWN", 45, 70);
+        sleep(300);
+        repeat("KEY_VOLUP", Math.max(0, level), 160);
+    }
+
+    /** Open an installed TV app whose name contains the given text (case-insensitive). */
+    boolean launchApp(String nameContains) {
+        if (!connected || socket == null) return false;
+        String appId = findApp(nameContains);
+        if (appId == null) {
+            requestApps();
+            for (int i = 0; i < 10 && appId == null; i++) { sleep(300); appId = findApp(nameContains); }
+        }
+        if (appId == null) return false;
+        String ip = ip();
+        try {
+            Request req = new Request.Builder().url("http://" + ip + ":" + PORT + "/api/v2/applications/" + appId)
+                    .post(RequestBody.create(new byte[0], null)).build();
+            try (Response r = http.newCall(req).execute()) {
+                if (r.isSuccessful()) return true;
+            }
+        } catch (Exception ignored) {}
+        try {
+            JSONObject data = new JSONObject().put("appId", appId).put("action_type", "NATIVE_LAUNCH");
+            JSONObject msg = new JSONObject().put("method", "ms.channel.emit")
+                    .put("params", new JSONObject().put("event", "ed.apps.launch").put("to", "host").put("data", data));
+            socket.send(msg.toString());
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private void requestApps() {
+        try {
+            JSONObject msg = new JSONObject().put("method", "ms.channel.emit")
+                    .put("params", new JSONObject().put("event", "ed.installedApp.get").put("to", "host"));
+            if (socket != null) socket.send(msg.toString());
+        } catch (Exception ignored) {}
+    }
+
+    private String findApp(String nameContains) {
+        String want = nameContains.toLowerCase(Locale.ROOT);
+        synchronized (apps) {
+            for (Map.Entry<String, String> e : apps.entrySet()) {
+                if (e.getKey().toLowerCase(Locale.ROOT).contains(want)) return e.getValue();
+            }
+        }
+        return null;
+    }
+
+    /** Start a YouTube video on the TV using DIAL (the same thing phone casting uses). */
+    boolean playYouTube(String videoId) {
+        String ip = ip();
+        if (ip == null) return false;
+        String base = prefs.getString("tv_dial", "http://" + ip + ":8080/ws/apps/");
+        if (dial(base, videoId)) return true;
+        String found = findDialUrl(ip);
+        if (found != null && !found.equals(base)) {
+            prefs.edit().putString("tv_dial", found).apply();
+            return dial(found, videoId);
+        }
+        return false;
+    }
+
+    private boolean dial(String base, String videoId) {
+        if (!base.endsWith("/")) base += "/";
+        try {
+            Request req = new Request.Builder().url(base + "YouTube")
+                    .post(RequestBody.create("v=" + videoId, MediaType.get("text/plain; charset=utf-8"))).build();
+            try (Response r = http.newCall(req).execute()) {
+                return r.code() == 201 || r.isSuccessful();
+            }
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /** Ask the TV for its DIAL address via SSDP. */
+    private String findDialUrl(String ip) {
+        WifiManager wm = (WifiManager) ctx.getSystemService(Context.WIFI_SERVICE);
+        WifiManager.MulticastLock lock = wm.createMulticastLock("firehome-dial");
+        lock.acquire();
+        String location = null;
+        try (DatagramSocket s = new DatagramSocket()) {
+            s.setSoTimeout(2500);
+            String msg = "M-SEARCH * HTTP/1.1\r\nHOST: 239.255.255.250:1900\r\nMAN: \"ssdp:discover\"\r\nMX: 2\r\n"
+                    + "ST: urn:dial-multiscreen-org:service:dial:1\r\n\r\n";
+            byte[] b = msg.getBytes(StandardCharsets.US_ASCII);
+            s.send(new DatagramPacket(b, b.length, InetAddress.getByName("239.255.255.250"), 1900));
+            byte[] buf = new byte[2048];
+            long end = System.currentTimeMillis() + 3000;
+            Pattern loc = Pattern.compile("(?i)LOCATION:\\s*(\\S+)");
+            while (System.currentTimeMillis() < end && location == null) {
+                DatagramPacket p = new DatagramPacket(buf, buf.length);
+                s.receive(p);
+                if (!p.getAddress().getHostAddress().equals(ip)) continue;
+                Matcher m = loc.matcher(new String(p.getData(), 0, p.getLength(), StandardCharsets.US_ASCII));
+                if (m.find()) location = m.group(1);
+            }
+        } catch (Exception ignored) {
+        } finally {
+            lock.release();
+        }
+        if (location == null) return null;
+        try (Response r = http.newCall(new Request.Builder().url(location).build()).execute()) {
+            String app = r.header("Application-URL");
+            return app;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     // --- Wake-on-LAN ---

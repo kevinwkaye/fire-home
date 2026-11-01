@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <queries>
         <package android:name="com.amazon.kindle" />
@@ -42,6 +43,12 @@
             android:screenOrientation="sensorLandscape"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|keyboard"
             android:windowSoftInputMode="adjustResize" />
+
+        <provider
+            android:name=".UpdateProvider"
+            android:authorities="com.kevinkaye.firehome.update"
+            android:exported="false"
+            android:grantUriPermissions="true" />
 
         <service
             android:name=".NightDream"

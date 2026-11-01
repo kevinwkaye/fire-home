@@ -135,6 +135,42 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 #typebox input:focus { border-color: var(--accent); }
 #typebox .cancel { height: 64px; padding: 0 22px; border-radius: 18px; background: var(--panel); border: 1px solid var(--edge); font-size: 20px; font-weight: 700; }
 
+/* Home extras */
+.app .sub { display: block; font-size: 15px; font-weight: 500; letter-spacing: 0; color: var(--muted); margin-top: 4px; }
+.duo { flex: 0 0 76px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.duo button { border-radius: 16px; background: var(--panel); border: 1px solid var(--edge); font-size: 18px; font-weight: 700; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: transform .12s; }
+.duo button:active { transform: scale(.96); background: #1f1f1f; }
+#cog { position: absolute; left: 24px; top: 24px; width: 44px; height: 44px; border-radius: 22px; display: flex; align-items: center; justify-content: center; z-index: 2; }
+#updpill { position: absolute; left: 24px; bottom: 24px; height: 36px; padding: 0 16px; border-radius: 18px; background: var(--accent); color: var(--bg); font-size: 16px; font-weight: 700; display: none; z-index: 2; }
+#updpill.on { display: block; }
+#toast { position: absolute; left: 50%; bottom: 28px; transform: translate(-50%, 20px); min-width: 300px; max-width: 640px; padding: 12px 22px; border-radius: 24px; background: #1e1e1e; border: 1px solid var(--edge); font-size: 17px; font-weight: 500; text-align: center; opacity: 0; transition: opacity .3s, transform .3s; pointer-events: none; z-index: 20; }
+#toast.on { opacity: 1; transform: translate(-50%, 0); }
+.apps { position: absolute; left: 272px; right: 272px; top: 100px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.apps button { height: 52px; border-radius: 26px; background: var(--panel); border: 1px solid var(--edge); font-size: 19px; font-weight: 700; transition: transform .12s; }
+.apps button:active { transform: scale(.96); background: #1f1f1f; }
+#tvpanel .rgrid { top: 168px; }
+#remote.tv #status { top: auto; bottom: 10px; }
+
+/* Settings */
+#settings { padding: 28px 40px 32px; }
+#settings header { display: flex; align-items: center; gap: 18px; height: 48px; }
+#settings h1 { margin: 0; font-size: 30px; font-weight: 800; letter-spacing: 1px; }
+.sgrid { position: absolute; left: 40px; right: 40px; top: 98px; bottom: 32px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.card2 { border-radius: 18px; background: var(--panel); border: 1px solid var(--edge); padding: 22px 24px; display: flex; flex-direction: column; gap: 16px; }
+.card2 h2 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: 1px; color: var(--accent); }
+.srow { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 19px; font-weight: 700; }
+.srow small { font-size: 16px; font-weight: 500; color: var(--muted); }
+.toggle { width: 56px; height: 32px; border-radius: 16px; background: #333; position: relative; flex: none; transition: background .2s; }
+.toggle::after { content: ""; position: absolute; left: 4px; top: 4px; width: 24px; height: 24px; border-radius: 12px; background: var(--ink); transition: transform .2s, background .2s; }
+.toggle[aria-checked="true"] { background: var(--accent); }
+.toggle[aria-checked="true"]::after { transform: translateX(24px); background: var(--bg); }
+.step { display: flex; align-items: center; gap: 10px; }
+.step button, .sbtn { height: 48px; min-width: 48px; padding: 0 16px; border-radius: 24px; background: #1f1f1f; border: 1px solid var(--edge); font-size: 18px; font-weight: 700; }
+.step button.pm { padding: 0; font-size: 26px; }
+.step output { width: 40px; text-align: center; font-size: 26px; font-weight: 800; }
+.note { margin: 0; font-size: 15px; line-height: 1.4; color: var(--muted); }
+.stack2 { display: flex; flex-direction: column; gap: 18px; }
+
 /* Night */
 #night { background: #000; color: #8a8a90; }
 #night .inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; padding-top: 40px; gap: 28px; }
@@ -203,14 +239,20 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     <nav aria-label="Apps">
       <button class="app" id="go-kindle" type="button">
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></svg>
-        KINDLE</button>
+        <span>KINDLE<span class="sub" id="kindle-sub">+ Lofi Girl on TV</span></span></button>
       <button class="app" id="go-tv" type="button">
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
         TV</button>
       <button class="app" id="go-xbox" type="button">
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12a4 4 0 0 1 3.9 4.9l-1.2 5.2a2.4 2.4 0 0 1-4.2 1L14.6 17H9.4l-1.9 2.1a2.4 2.4 0 0 1-4.2-1l-1.2-5.2A4 4 0 0 1 6 8z"/><path d="M7.5 11.5v3M6 13h3"/><circle cx="16" cy="12" r="0.6"/><circle cx="17.8" cy="14" r="0.6"/></svg>
         XBOX</button>
+      <div class="duo">
+        <button type="button" id="go-telly"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Telly time</button>
+        <button type="button" id="go-bed"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Bedtime</button>
+      </div>
     </nav>
+    <button id="cog" type="button" aria-label="Settings"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6a6a70" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+    <button id="updpill" type="button" aria-label="Update ready, tap to install">Update ready</button>
   </section>
 
   <section id="remote" class="screen tv" aria-label="Remote">
@@ -228,6 +270,12 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     </header>
     <div id="status" role="status"></div>
     <div class="panel" id="tvpanel">
+    <nav class="apps" aria-label="Open on the TV">
+      <button type="button" data-app="Netflix">Netflix</button>
+      <button type="button" data-app="YouTube">YouTube</button>
+      <button type="button" data-app="iPlayer">iPlayer</button>
+      <button type="button" data-app="Prime">Prime</button>
+    </nav>
     <div class="rgrid">
       <div class="col">
         <button class="key" type="button" data-key="KEY_RETURN">Back</button>
@@ -325,6 +373,39 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     <div class="slot" data-slot="night"></div>
   </section>
 
+  <section id="settings" class="screen" aria-label="Settings">
+    <header>
+      <button class="pill" id="s-back" type="button"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Home</button>
+      <h1>SETTINGS</h1>
+    </header>
+    <div class="sgrid">
+      <section class="card2">
+        <h2>KINDLE + LOFI GIRL</h2>
+        <div class="srow">Play lofi on the TV when I open Kindle<button class="toggle" type="button" role="switch" id="t-lofi" aria-checked="true" aria-label="Play lofi with Kindle"></button></div>
+        <div class="srow">Lofi volume
+          <div class="step"><button class="pm" type="button" id="v-down" aria-label="Quieter">&#8722;</button><output id="v-val">8</output><button class="pm" type="button" id="v-up" aria-label="Louder">+</button><button type="button" id="v-test">Test</button></div>
+        </div>
+        <div class="srow">Pick my YouTube profile for me<button class="toggle" type="button" role="switch" id="t-profile" aria-checked="true" aria-label="Pick my YouTube profile"></button></div>
+        <p class="note">Hold the Kindle button on the home screen to read without music.</p>
+      </section>
+      <div class="stack2">
+        <section class="card2">
+          <h2>SHORTCUTS</h2>
+          <div class="srow">Telly time<small>TV on, HDMI 1, wake Xbox</small></div>
+          <div class="srow">Bedtime<small>Xbox off, TV off, night clock</small></div>
+        </section>
+        <section class="card2">
+          <h2>THIS TABLET</h2>
+          <div class="srow"><span>Fire Home <span id="s-ver"></span> <small id="s-upd"></small></span><button class="sbtn" type="button" id="s-check">Check for updates</button></div>
+          <div class="srow"><span>Xbox <small id="s-xbox"></small></span><button class="sbtn" type="button" id="s-xsign">Sign out</button></div>
+          <button class="sbtn" type="button" id="s-android">Open tablet settings</button>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <div id="toast" role="status"></div>
+
   <div class="buddy" id="buddy" role="button" aria-label="Character, tap to swap">
     <svg id="buddy-svg" viewBox="26 6 150 108" preserveAspectRatio="xMidYMin meet" xmlns="http://www.w3.org/2000/svg">
       <text class="zzz" x="158" y="40" font-size="22">z</text>
@@ -402,6 +483,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     const slot = document.querySelector('[data-slot="' + name + '"]');
     if (slot) slot.appendChild(buddy);
     buddy.classList.toggle("asleep", name === "night");
+    if (name === "home") { try { const st = JSON.parse(Host.getSettings()); $("kindle-sub").style.display = st.lofiOn ? "" : "none"; } catch (e) {} }
     if (name === "remote" && Host) { Host.tvConnect(); if (mode === "xbox") xboxRefresh(); else refreshStatus(); }
     if (name === "night") battery();
   }
@@ -448,10 +530,27 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   if (isDream) setInterval(battery, 60000);
 
   /* ---------- Home buttons ---------- */
-  $("go-kindle").addEventListener("click", () => { cheer(); Host && Host.openKindle(); });
+  // Kindle: tap = books + lofi on the TV, hold = books only.
+  (function () {
+    const k = $("go-kindle");
+    let t, held = false;
+    k.addEventListener("pointerdown", () => { held = false; t = setTimeout(() => { held = true; cheer(); Host && Host.openKindle(); }, 650); });
+    ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => k.addEventListener(ev, () => clearTimeout(t)));
+    k.addEventListener("click", () => {
+      if (held) return;
+      cheer();
+      if (!Host) return;
+      Host.openKindle();
+      Host.kindleLofi();
+    });
+  })();
+  $("go-telly").addEventListener("click", () => { cheer(); Host && Host.tellyTime(); });
+  $("go-bed").addEventListener("click", () => { Host && Host.bedtime(); show("night"); });
+  $("cog").addEventListener("click", () => { loadSettings(); show("settings"); });
+  $("night").addEventListener("click", () => { if (!isDream) show("home"); });
   $("go-tv").addEventListener("click", () => { setMode("tv", false); show("remote"); });
   $("go-xbox").addEventListener("click", () => { setMode("xbox", true); show("remote"); });
-  // Long press on the clock opens Android settings (the only way back into them).
+  // Long press on the clock still opens Android settings, as a backup.
   let lp;
   document.querySelector("#home .clock").addEventListener("touchstart", () => { lp = setTimeout(() => Host && Host.openSettings(), 1500); }, { passive: true });
   ["touchend", "touchmove", "touchcancel"].forEach((ev) => document.querySelector("#home .clock").addEventListener(ev, () => clearTimeout(lp), { passive: true }));
@@ -513,6 +612,60 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   function refreshStatus() { if (Host && Host.tvConnected()) window.onTvStatus("connected"); }
   status.addEventListener("click", () => { if (Host) Host.tvForget(); });
 
+
+  /* ---------- TV apps ---------- */
+  document.querySelectorAll("[data-app]").forEach((b) => b.addEventListener("click", () => {
+    nudge();
+    showToast("Opening " + b.dataset.app + " on the TV");
+    Host && Host.tvApp(b.dataset.app);
+  }));
+
+  /* ---------- Toast ---------- */
+  const toastEl = $("toast");
+  let toastT;
+  function showToast(text) {
+    toastEl.textContent = text;
+    toastEl.classList.add("on");
+    clearTimeout(toastT);
+    toastT = setTimeout(() => toastEl.classList.remove("on"), 3500);
+  }
+  window.showToast = showToast;
+
+  /* ---------- Settings ---------- */
+  let settings = { lofiOn: true, lofiVolume: 8, lofiProfile: true, version: "" };
+  function loadSettings() {
+    try { settings = Object.assign(settings, JSON.parse(Host.getSettings())); } catch (e) {}
+    $("t-lofi").setAttribute("aria-checked", String(settings.lofiOn));
+    $("t-profile").setAttribute("aria-checked", String(settings.lofiProfile));
+    $("v-val").textContent = settings.lofiVolume;
+    $("s-ver").textContent = settings.version;
+    $("kindle-sub").style.display = settings.lofiOn ? "" : "none";
+    const signed = !!(Host && Host.xboxSignedIn && Host.xboxSignedIn());
+    $("s-xbox").textContent = signed ? "Signed in" : "Not signed in";
+    $("s-xsign").textContent = signed ? "Sign out" : "Sign in";
+  }
+  $("s-back").addEventListener("click", () => show("home"));
+  $("t-lofi").addEventListener("click", () => { settings.lofiOn = !settings.lofiOn; Host && Host.setLofiOn(settings.lofiOn); loadSettings(); });
+  $("t-profile").addEventListener("click", () => { settings.lofiProfile = !settings.lofiProfile; Host && Host.setLofiProfile(settings.lofiProfile); loadSettings(); });
+  function vol(d) { settings.lofiVolume = Math.max(0, Math.min(40, settings.lofiVolume + d)); $("v-val").textContent = settings.lofiVolume; Host && Host.setLofiVolume(settings.lofiVolume); }
+  $("v-down").addEventListener("click", () => vol(-1));
+  $("v-up").addEventListener("click", () => vol(1));
+  $("v-test").addEventListener("click", () => Host && Host.testVolume());
+  $("s-check").addEventListener("click", () => { $("s-upd").textContent = "Checking"; Host && Host.checkUpdate(); });
+  $("s-xsign").addEventListener("click", () => {
+    if (!Host) return;
+    if (Host.xboxSignedIn()) { Host.xboxSignOut(); loadSettings(); } else Host.xboxSignIn();
+  });
+  $("s-android").addEventListener("click", () => Host && Host.openSettings());
+
+  /* ---------- Updates ---------- */
+  window.onUpdate = (state, detail) => {
+    $("updpill").classList.toggle("on", state === "ready");
+    $("s-upd").textContent = state === "ready" ? "Update ready" : state === "downloading" ? "Downloading" : detail;
+    if (state === "error") showToast(detail);
+    if (state === "downloading") showToast("Downloading the update");
+  };
+  $("updpill").addEventListener("click", () => Host && Host.installUpdate());
 
   /* ---------- Xbox ---------- */
   function xbox(fn, arg) { nudge(); try { Host && Host[fn](arg); } catch (e) {} }

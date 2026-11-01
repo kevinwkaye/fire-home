@@ -14,7 +14,7 @@ public class NightDream extends DreamService {
         setInteractive(false);
         setFullscreen(true);
         setScreenBright(false);
-        web = HomeWeb.create(this, true, null, null, night -> setScreenBright(!night));
+        web = HomeWeb.create(this, true, null, null, null, null, night -> setScreenBright(!night));
         setContentView(web);
     }
 

@@ -29,7 +29,7 @@ final class HomeWeb {
     private HomeWeb() {}
 
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
-    static WebView create(Context context, boolean dream, SamsungTv tv, XboxLive xbox, NightListener listener) {
+    static WebView create(Context context, boolean dream, SamsungTv tv, XboxLive xbox, Routines routines, Updater updater, NightListener listener) {
         WebView web = new WebView(context);
         web.setBackgroundColor(Color.BLACK);
         web.setVerticalScrollBarEnabled(false);
@@ -78,6 +78,37 @@ final class HomeWeb {
                 });
             }
 
+            @JavascriptInterface public void kindleLofi() { if (routines != null) routines.lofi(); }
+
+            @JavascriptInterface public void tellyTime() { if (routines != null) routines.tellyTime(); }
+
+            @JavascriptInterface public void bedtime() { if (routines != null) routines.bedtime(); }
+
+            @JavascriptInterface public void tvApp(String name) { if (routines != null) routines.tvApp(name); }
+
+            @JavascriptInterface public void testVolume() { if (routines != null) routines.testVolume(); }
+
+            @JavascriptInterface public String getSettings() {
+                JSONObject o = new JSONObject();
+                try {
+                    o.put("lofiOn", prefs.getBoolean("lofi_on", true));
+                    o.put("lofiVolume", prefs.getInt("lofi_volume", 8));
+                    o.put("lofiProfile", prefs.getBoolean("lofi_profile", true));
+                    o.put("version", updater == null ? "" : updater.installedName());
+                } catch (Exception ignored) {}
+                return o.toString();
+            }
+
+            @JavascriptInterface public void setLofiOn(boolean on) { prefs.edit().putBoolean("lofi_on", on).apply(); }
+
+            @JavascriptInterface public void setLofiProfile(boolean on) { prefs.edit().putBoolean("lofi_profile", on).apply(); }
+
+            @JavascriptInterface public void setLofiVolume(int v) { prefs.edit().putInt("lofi_volume", Math.max(0, Math.min(40, v))).apply(); }
+
+            @JavascriptInterface public void checkUpdate() { if (updater != null) updater.check(); }
+
+            @JavascriptInterface public void installUpdate() { if (updater != null) updater.install(); }
+
             @JavascriptInterface public void openSettings() {
                 main.post(() -> {
                     try {
@@ -123,6 +154,19 @@ final class HomeWeb {
 
         web.loadUrl("file:///android_asset/index.html" + (dream ? "#night" : ""));
         return web;
+    }
+
+    private static void js(WebView web, String code) {
+        if (web == null) return;
+        web.post(() -> web.evaluateJavascript(code, null));
+    }
+
+    static void pushToast(WebView web, String text) {
+        js(web, "window.showToast && window.showToast(" + JSONObject.quote(text) + ")");
+    }
+
+    static void pushUpdate(WebView web, String state, String detail) {
+        js(web, "window.onUpdate && window.onUpdate(" + JSONObject.quote(state) + "," + JSONObject.quote(detail == null ? "" : detail) + ")");
     }
 
     /** Push an Xbox status change into the page. */
