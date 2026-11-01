@@ -78,7 +78,18 @@ final class HomeWeb {
                 });
             }
 
-            @JavascriptInterface public void kindleLofi() { if (routines != null) routines.lofi(); }
+            @JavascriptInterface public void kindleLofi() {
+                if (routines == null) return;
+                if (prefs.getBoolean("lofi_on", true)) prefs.edit().putBoolean("kindle_pending", true).apply();
+                routines.lofi();
+            }
+
+            @JavascriptInterface public void stopLofi() { if (routines != null) routines.stopLofi(); }
+
+            @JavascriptInterface public boolean helperOn() {
+                String on = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+                return on != null && on.contains("com.kevinkaye.firehome/") && on.contains("HomeHijack");
+            }
 
             @JavascriptInterface public void tellyTime() { if (routines != null) routines.tellyTime(); }
 

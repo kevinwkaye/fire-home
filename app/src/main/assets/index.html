@@ -171,6 +171,24 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .note { margin: 0; font-size: 15px; line-height: 1.4; color: var(--muted); }
 .stack2 { display: flex; flex-direction: column; gap: 18px; }
 
+/* After reading + battery */
+#after { position: absolute; inset: 0; background: rgba(5,5,5,.72); display: none; z-index: 6; }
+#after.on { display: block; }
+#after .card3 { position: absolute; left: 112px; top: 112px; width: 500px; border-radius: 22px; background: #161616; border: 1px solid var(--edge); padding: 22px 24px; display: flex; flex-direction: column; gap: 16px; }
+#after h2 { margin: 0; font-size: 26px; font-weight: 800; }
+#after p { margin: 0; font-size: 17px; line-height: 1.4; color: var(--muted); }
+#after .row { display: flex; gap: 12px; }
+#after .row button { flex: 1; height: 56px; border-radius: 28px; background: #1f1f1f; border: 1px solid var(--edge); font-size: 20px; font-weight: 700; }
+#after .row .go { background: var(--accent); color: var(--bg); border: 0; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; }
+#after .row .later { flex: 0 0 auto; padding: 0 18px; background: transparent; color: var(--muted); font-size: 18px; }
+#after.day .card3 { top: 150px; }
+#after.day .go { display: none; }
+#home.after .slot { z-index: 7; }
+#lowbat { position: absolute; left: 470px; bottom: 150px; padding: 10px 16px; border-radius: 18px 18px 18px 4px; background: #1e1e1e; border: 1px solid var(--edge); display: none; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; z-index: 3; }
+#lowbat.on { display: flex; }
+.buddy.sleepy .eye { transform: scaleY(.45); }
+.buddy.sleepy .bob { animation-duration: 7s; }
+
 /* Night */
 #night { background: #000; color: #8a8a90; }
 #night .inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; padding-top: 40px; gap: 28px; }
@@ -252,6 +270,18 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       </div>
     </nav>
     <button id="cog" type="button" aria-label="Settings"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6a6a70" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+    <div id="lowbat" role="status"><svg aria-hidden="true" width="26" height="16" viewBox="0 0 26 16" fill="none"><rect x="1" y="1" width="21" height="14" rx="3" stroke="#ff6b5e" stroke-width="2"/><rect x="4" y="4" width="3" height="8" rx="1" fill="#ff6b5e"/><rect x="23" y="5" width="2" height="6" rx="1" fill="#ff6b5e"/></svg><span id="lowbat-txt"></span></div>
+    <div id="after" role="dialog" aria-modal="true" aria-labelledby="after-h">
+      <div class="card3">
+        <h2 id="after-h">Done for the night?</h2>
+        <p id="after-p">You've closed Kindle. Bedtime turns off the TV and Xbox and dims the tablet.</p>
+        <div class="row">
+          <button class="go" type="button" id="after-bed"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Bedtime</button>
+          <button type="button" id="after-stop">Just stop the lofi</button>
+          <button class="later" type="button" id="after-no">Not yet</button>
+        </div>
+      </div>
+    </div>
     <button id="updpill" type="button" aria-label="Update ready, tap to install">Update ready</button>
   </section>
 
@@ -486,9 +516,10 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     if (name === "home") { try { const st = JSON.parse(Host.getSettings()); $("kindle-sub").style.display = st.lofiOn ? "" : "none"; } catch (e) {} }
     if (name === "remote" && Host) { Host.tvConnect(); if (mode === "xbox") xboxRefresh(); else refreshStatus(); }
     if (name === "night") battery();
+    const lb = document.getElementById("lowbat"); if (lb && name !== "home") lb.classList.remove("on");
   }
   window.goHome = () => { if (!isDream) show("home"); };
-  window.onResumed = () => { tick(true); if (screen === "remote" && Host) Host.tvConnect(); };
+  window.onResumed = () => { tick(true); homeChecks(); helperCheck(); if (screen === "remote" && Host) Host.tvConnect(); };
 
   /* ---------- Clock ---------- */
   const DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
@@ -658,6 +689,44 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   });
   $("s-android").addEventListener("click", () => Host && Host.openSettings());
 
+  /* ---------- After reading ---------- */
+  const after = $("after"), home = $("home");
+  function closeAfter() { after.classList.remove("on"); home.classList.remove("after"); buddy.classList.remove("asleep"); }
+  window.afterReading = (late) => {
+    show("home");
+    after.classList.toggle("day", !late);
+    $("after-h").textContent = late ? "Done for the night?" : "Stop the lofi?";
+    $("after-p").textContent = late ? "You've closed Kindle. Bedtime turns off the TV and Xbox and dims the tablet." : "You've closed Kindle. Lofi Girl is still playing on the TV.";
+    after.classList.add("on");
+    home.classList.add("after");
+    if (late) buddy.classList.add("asleep"); else nudge();
+  };
+  $("after-bed").addEventListener("click", () => { closeAfter(); Host && Host.bedtime(); show("night"); });
+  $("after-stop").addEventListener("click", () => { closeAfter(); showToast("Stopping the lofi"); Host && Host.stopLofi(); });
+  $("after-no").addEventListener("click", closeAfter);
+
+  /* ---------- Battery + helper check ---------- */
+  function homeChecks() {
+    if (isDream || !Host) return;
+    try {
+      const b = JSON.parse(Host.battery());
+      const low = b.pct >= 0 && b.pct < 15 && !b.charging;
+      $("lowbat").classList.toggle("on", low && screen === "home");
+      $("lowbat-txt").textContent = b.pct + "% \u00b7 plug me in";
+      buddy.classList.toggle("sleepy", low);
+    } catch (e) {}
+  }
+  setInterval(homeChecks, 60000);
+  let helperWarned = 0;
+  function helperCheck() {
+    try {
+      if (Host && Host.helperOn && !Host.helperOn() && Date.now() - helperWarned > 3600000) {
+        helperWarned = Date.now();
+        setTimeout(() => showToast("The Home button helper is off. Plug into the laptop and run REPAIR"), 1500);
+      }
+    } catch (e) {}
+  }
+
   /* ---------- Updates ---------- */
   window.onUpdate = (state, detail) => {
     $("updpill").classList.toggle("on", state === "ready");
@@ -807,6 +876,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   requestAnimationFrame(drawBlob);
   blinkLoop();
   show(isDream ? "night" : "home");
+  setTimeout(() => { homeChecks(); helperCheck(); }, 2000);
 })();
 </script>
 </body>

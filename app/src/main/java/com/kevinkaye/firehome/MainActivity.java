@@ -60,6 +60,14 @@ public class MainActivity extends Activity {
             updater.check();
         }
         if (web != null) web.evaluateJavascript("window.onResumed && window.onResumed()", null);
+        // Back from Kindle with lofi playing: offer Bedtime (late) or to stop the lofi.
+        android.content.SharedPreferences prefs = getSharedPreferences("firehome", MODE_PRIVATE);
+        if (web != null && prefs.getBoolean("kindle_pending", false)) {
+            prefs.edit().putBoolean("kindle_pending", false).apply();
+            int h = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY);
+            boolean late = h >= 22 || h < 5;
+            web.evaluateJavascript("window.afterReading && window.afterReading(" + late + ")", null);
+        }
     }
 
     @Override

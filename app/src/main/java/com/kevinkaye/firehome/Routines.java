@@ -57,6 +57,13 @@ final class Routines {
         });
     }
 
+    void stopLofi() {
+        run.execute(() -> {
+            if (!tv.isConnected() && !tv.ensureOn(6_000)) return;
+            tv.stopYouTube();
+        });
+    }
+
     void testVolume() {
         run.execute(() -> {
             if (!tv.ensureOn(15_000)) { toast.show("Couldn't reach the TV"); return; }

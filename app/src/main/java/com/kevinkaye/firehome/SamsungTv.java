@@ -404,6 +404,20 @@ final class SamsungTv {
         return null;
     }
 
+    /** Close YouTube on the TV (DIAL stop), falling back to the Exit key. */
+    void stopYouTube() {
+        String ip = ip();
+        boolean ok = false;
+        if (ip != null) {
+            String base = prefs.getString("tv_dial", "http://" + ip + ":8080/ws/apps/");
+            if (!base.endsWith("/")) base += "/";
+            try (Response r = http.newCall(new Request.Builder().url(base + "YouTube/run").delete().build()).execute()) {
+                ok = r.isSuccessful();
+            } catch (Exception ignored) {}
+        }
+        if (!ok && connected) { send("KEY_EXIT"); sleep(400); send("KEY_EXIT"); }
+    }
+
     /** Start a YouTube video on the TV using DIAL (the same thing phone casting uses). */
     boolean playYouTube(String videoId) {
         String ip = ip();
