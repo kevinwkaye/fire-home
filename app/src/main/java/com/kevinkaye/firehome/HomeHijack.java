@@ -2,6 +2,7 @@ package com.kevinkaye.firehome;
 
 import android.accessibilityservice.AccessibilityService;
 import android.content.Intent;
+import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
 
 /**
@@ -18,6 +19,21 @@ public class HomeHijack extends AccessibilityService {
         if (event == null || event.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return;
         CharSequence pkg = event.getPackageName();
         if (pkg == null || !AMAZON_LAUNCHER.contentEquals(pkg)) return;
+        goHome();
+    }
+
+    /**
+     * Catch the Home press before Fire OS acts on it. Consuming it here also avoids Android's
+     * five-second delay on opening apps straight after Home is pressed.
+     */
+    @Override
+    protected boolean onKeyEvent(KeyEvent event) {
+        if (event.getKeyCode() != KeyEvent.KEYCODE_HOME) return false;
+        if (event.getAction() == KeyEvent.ACTION_UP) goHome();
+        return true;
+    }
+
+    private void goHome() {
         long now = System.currentTimeMillis();
         if (now - last < 400) return;
         last = now;
