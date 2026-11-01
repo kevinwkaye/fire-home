@@ -10,8 +10,17 @@ android {
         applicationId "com.kevinkaye.firehome"
         minSdk 26
         targetSdk 34
-        versionCode 2
-        versionName "1.1"
+        versionCode 3
+        versionName "1.2"
+    }
+
+    signingConfigs {
+        debug {
+            storeFile file("firehome.keystore")
+            storePassword "firehome"
+            keyAlias "firehome"
+            keyPassword "firehome"
+        }
     }
 
     compileOptions {
