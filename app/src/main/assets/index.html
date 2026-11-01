@@ -91,6 +91,50 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .circle { width: 88px; height: 88px; border-radius: 44px; background: var(--panel); border: 1px solid var(--edge); display: flex; align-items: center; justify-content: center; }
 .circle:active, .round:active, .pill:active { background: #1f1f1f; }
 
+
+/* Xbox controller */
+#remote .panel { position: absolute; inset: 0; display: none; pointer-events: none; }
+#remote .panel > * { pointer-events: auto; }
+#remote header { z-index: 3; }
+#remote.tv #tvpanel, #remote.xbox #xpanel { display: block; }
+#remote.xbox .slot { left: 110px; }
+.cross { position: absolute; left: 50px; top: 160px; width: 270px; height: 270px; }
+.cross button { position: absolute; background: var(--panel); border: 1px solid var(--edge); display: flex; align-items: center; justify-content: center; }
+.cross button:active, .face:active, .xsmall:active, .media:active, .xpill:active, .xvol button:active { background: #262626; transform: scale(.96); }
+.cross .up { left: 90px; top: 0; width: 90px; height: 100px; border-radius: 18px 18px 6px 6px; }
+.cross .down { left: 90px; bottom: 0; width: 90px; height: 100px; border-radius: 6px 6px 18px 18px; }
+.cross .l { left: 0; top: 90px; width: 100px; height: 90px; border-radius: 18px 6px 6px 18px; }
+.cross .r { right: 0; top: 90px; width: 100px; height: 90px; border-radius: 6px 18px 18px 6px; }
+.cross .hub { position: absolute; left: 100px; top: 100px; width: 70px; height: 70px; background: var(--panel); }
+.xmid { position: absolute; left: 372px; top: 140px; width: 280px; display: flex; flex-direction: column; align-items: center; gap: 22px; }
+.xrow { display: flex; align-items: center; gap: 14px; }
+.xsmall { width: 64px; height: 64px; border-radius: 32px; background: var(--panel); border: 1px solid var(--edge); display: flex; align-items: center; justify-content: center; transition: transform .12s; }
+.guide { width: 104px; height: 104px; border-radius: 52px; background: var(--panel); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; margin: 0 12px; transition: transform .12s; }
+.guide:active { transform: scale(.94); }
+.media { width: 64px; height: 56px; border-radius: 16px; background: var(--panel); border: 1px solid var(--edge); display: flex; align-items: center; justify-content: center; transition: transform .12s; }
+.media.wide { width: 80px; }
+.xpill { height: 56px; padding: 0 22px; border-radius: 28px; background: var(--panel); border: 1px solid var(--edge); display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; transition: transform .12s; }
+.xvol { height: 56px; border-radius: 28px; background: var(--panel); border: 1px solid var(--edge); display: flex; align-items: center; }
+.xvol button { width: 52px; height: 56px; font-size: 28px; font-weight: 700; border-radius: 28px; }
+.xvol span { font-size: 13px; font-weight: 700; letter-spacing: 2px; color: var(--muted); }
+.faces { position: absolute; right: 50px; top: 160px; width: 270px; height: 270px; }
+.face { position: absolute; width: 86px; height: 86px; border-radius: 43px; background: var(--panel); border: 2px solid var(--edge); font-size: 32px; font-weight: 800; transition: transform .12s; }
+.face.y { left: 92px; top: 0; color: #f2c230; }
+.face.x { left: 0; top: 92px; color: #4fa3ff; }
+.face.b { right: 0; top: 92px; color: #ff6b5e; }
+.face.a { left: 92px; bottom: 0; color: #6fd27e; }
+#signin { position: absolute; left: 0; right: 0; top: 150px; display: none; flex-direction: column; align-items: center; gap: 22px; text-align: center; }
+#remote.xbox.signedout #signin { display: flex; }
+#remote.xbox.signedout .xctl { display: none; }
+#signin p { margin: 0; max-width: 520px; font-size: 22px; line-height: 1.35; color: var(--muted); }
+.cta { height: 64px; padding: 0 34px; border-radius: 32px; background: var(--accent); color: var(--bg); font-size: 22px; font-weight: 800; }
+#typebox { position: absolute; inset: 0; background: rgba(5,5,5,.94); display: none; align-items: flex-start; justify-content: center; padding-top: 60px; z-index: 5; }
+#typebox.on { display: flex; }
+#typebox form { display: flex; gap: 12px; }
+#typebox input { width: 560px; height: 64px; border-radius: 18px; border: 2px solid var(--edge); background: var(--panel); color: var(--ink); font: 700 24px var(--digits); padding: 0 20px; outline: none; }
+#typebox input:focus { border-color: var(--accent); }
+#typebox .cancel { height: 64px; padding: 0 22px; border-radius: 18px; background: var(--panel); border: 1px solid var(--edge); font-size: 20px; font-weight: 700; }
+
 /* Night */
 #night { background: #000; color: #8a8a90; }
 #night .inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; padding-top: 40px; gap: 28px; }
@@ -169,7 +213,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     </nav>
   </section>
 
-  <section id="remote" class="screen" aria-label="Remote">
+  <section id="remote" class="screen tv" aria-label="Remote">
     <header>
       <button class="pill" id="back" type="button" aria-label="Back to home">
         <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
@@ -183,6 +227,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
       </button>
     </header>
     <div id="status" role="status"></div>
+    <div class="panel" id="tvpanel">
     <div class="rgrid">
       <div class="col">
         <button class="key" type="button" data-key="KEY_RETURN">Back</button>
@@ -210,6 +255,53 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
           <button class="circle" type="button" data-key="KEY_SOURCE" aria-label="Source"><svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M12 9v5M9.5 11.5L12 14l2.5-2.5"/></svg></button>
         </div>
       </div>
+    </div>
+    </div>
+    <div class="panel" id="xpanel">
+      <div id="signin">
+        <p>Sign in once with the Microsoft account your Xbox uses. You'll type your details on Microsoft's own page.</p>
+        <button class="cta" type="button" id="x-signin">Sign in to Xbox</button>
+      </div>
+      <div class="cross xctl">
+        <button class="up" type="button" data-x="Up" aria-label="D-pad up"><svg aria-hidden="true" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></button>
+        <button class="down" type="button" data-x="Down" aria-label="D-pad down"><svg aria-hidden="true" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+        <button class="l" type="button" data-x="Left" aria-label="D-pad left"><svg aria-hidden="true" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+        <button class="r" type="button" data-x="Right" aria-label="D-pad right"><svg aria-hidden="true" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+        <div class="hub"></div>
+      </div>
+      <div class="xmid xctl">
+        <div class="xrow">
+          <button class="xsmall" type="button" data-x="View" aria-label="View"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="11" height="9" rx="1.5"/><rect x="10" y="11" width="11" height="9" rx="1.5"/></svg></button>
+          <button class="guide" type="button" data-x="Nexus" aria-label="Xbox button"><svg aria-hidden="true" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M7.5 6.5c3 2.2 6 6.8 7.6 11.2M16.5 6.5c-3 2.2-6 6.8-7.6 11.2"/></svg></button>
+          <button class="xsmall" type="button" data-x="Menu" aria-label="Menu"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 7h14M5 12h14M5 17h14"/></svg></button>
+        </div>
+        <div class="xrow">
+          <button class="media" type="button" data-media="Previous" aria-label="Previous"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18 5L9 12l9 7z"/><rect x="5" y="5" width="2.6" height="14" rx="1"/></svg></button>
+          <button class="media wide" type="button" id="x-play" aria-label="Play or pause"><svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M5 4l9 8-9 8z"/><rect x="16" y="5" width="2.6" height="14" rx="1"/><rect x="20" y="5" width="2.6" height="14" rx="1"/></svg></button>
+          <button class="media" type="button" data-media="Next" aria-label="Next"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5l9 7-9 7z"/><rect x="16.4" y="5" width="2.6" height="14" rx="1"/></svg></button>
+        </div>
+        <div class="xrow">
+          <button class="xpill" type="button" id="x-type"><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg>Type</button>
+          <div class="xvol">
+            <button type="button" data-key="KEY_VOLDOWN" data-repeat aria-label="TV volume down">&#8722;</button>
+            <span>VOL</span>
+            <button type="button" data-key="KEY_VOLUP" data-repeat aria-label="TV volume up">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="faces xctl">
+        <button class="face y" type="button" data-x="Y">Y</button>
+        <button class="face x" type="button" data-x="X">X</button>
+        <button class="face b" type="button" data-x="B">B</button>
+        <button class="face a" type="button" data-x="A">A</button>
+      </div>
+    </div>
+    <div id="typebox">
+      <form id="typeform">
+        <input id="typein" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type, then press Send" aria-label="Text to send to the Xbox">
+        <button class="cta" type="submit">Send</button>
+        <button class="cancel" type="button" id="typecancel">Cancel</button>
+      </form>
     </div>
     <div class="slot" data-slot="remote"></div>
   </section>
@@ -310,7 +402,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     const slot = document.querySelector('[data-slot="' + name + '"]');
     if (slot) slot.appendChild(buddy);
     buddy.classList.toggle("asleep", name === "night");
-    if (name === "remote" && Host) { Host.tvConnect(); refreshStatus(); }
+    if (name === "remote" && Host) { Host.tvConnect(); if (mode === "xbox") xboxRefresh(); else refreshStatus(); }
     if (name === "night") battery();
   }
   window.goHome = () => { if (!isDream) show("home"); };
@@ -366,17 +458,20 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 
   /* ---------- Remote ---------- */
   let mode = "tv";
+  const remote = $("remote");
   function setMode(m, sendKey) {
     mode = m;
+    remote.classList.toggle("tv", m === "tv");
+    remote.classList.toggle("xbox", m === "xbox");
+    if (m === "xbox") xboxRefresh(); else refreshStatus();
     $("tab-tv").setAttribute("aria-pressed", String(m === "tv"));
     $("tab-xbox").setAttribute("aria-pressed", String(m === "xbox"));
-    $("menu-key").textContent = m === "xbox" ? "Guide" : "Menu";
     if (sendKey) key(m === "xbox" ? "KEY_HDMI1" : "KEY_TV");
   }
   $("tab-tv").addEventListener("click", () => setMode("tv", true));
   $("tab-xbox").addEventListener("click", () => setMode("xbox", true));
   $("back").addEventListener("click", () => show("home"));
-  $("power").addEventListener("click", () => { nudge(); Host && Host.tvPower(); });
+  $("power").addEventListener("click", () => { nudge(); if (!Host) return; if (mode === "xbox") Host.xboxPower(); else Host.tvPower(); });
 
   function key(k) { nudge(); try { Host && Host.tvKey(k); } catch (e) {} }
 
@@ -409,6 +504,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     denied: ["The TV blocked Fire Home. Allow it under TV Settings > General > External Device Manager, then tap here", "warn"]
   };
   window.onTvStatus = (state) => {
+    if (mode === "xbox") return;
     const m = MESSAGES[state] || ["", ""];
     status.textContent = m[0];
     status.className = m[1];
@@ -416,6 +512,50 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   };
   function refreshStatus() { if (Host && Host.tvConnected()) window.onTvStatus("connected"); }
   status.addEventListener("click", () => { if (Host) Host.tvForget(); });
+
+
+  /* ---------- Xbox ---------- */
+  function xbox(fn, arg) { nudge(); try { Host && Host[fn](arg); } catch (e) {} }
+  document.querySelectorAll("[data-x]").forEach((b) => {
+    b.addEventListener("pointerdown", (e) => { e.preventDefault(); xbox("xboxKey", b.dataset.x); });
+  });
+  document.querySelectorAll("[data-media]").forEach((b) => b.addEventListener("click", () => xbox("xboxMedia", b.dataset.media)));
+  let xplaying = true;
+  $("x-play").addEventListener("click", () => { xbox("xboxMedia", xplaying ? "Pause" : "Play"); xplaying = !xplaying; });
+  $("x-signin").addEventListener("click", () => Host && Host.xboxSignIn());
+  const typebox = $("typebox"), typein = $("typein");
+  $("x-type").addEventListener("click", () => { typebox.classList.add("on"); typein.value = ""; setTimeout(() => typein.focus(), 50); });
+  $("typecancel").addEventListener("click", () => { typein.blur(); typebox.classList.remove("on"); });
+  $("typeform").addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (typein.value) xbox("xboxText", typein.value);
+    typein.blur();
+    typebox.classList.remove("on");
+  });
+  let xstate = "";
+  const XMSG = {
+    signedout: ["", ""],
+    connecting: ["Connecting to your Xbox", ""],
+    ready: ["Connected to {n}", "done"],
+    off: ["{n} is asleep. Tap power to wake it", "warn"],
+    noconsole: ["No Xbox found on this account. Turn on Remote features on the Xbox", "warn"],
+    error: ["Xbox: {n}", "warn"]
+  };
+  window.onXboxStatus = (state, detail) => {
+    xstate = state;
+    remote.classList.toggle("signedout", state === "signedout");
+    if (mode !== "xbox") return;
+    const m = XMSG[state] || ["", ""];
+    status.textContent = m[0].replace("{n}", detail || "Xbox");
+    status.className = m[1];
+    if (state === "ready") cheer();
+  };
+  function xboxRefresh() {
+    const signed = !!(Host && Host.xboxSignedIn && Host.xboxSignedIn());
+    remote.classList.toggle("signedout", !signed);
+    status.textContent = "";
+    if (signed) Host.xboxConnect();
+  }
 
   /* ---------- Character (ported from Flip Fella) ---------- */
   const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;

@@ -65,7 +65,7 @@ public class HomeHijack extends AccessibilityService {
     private void showCover() {
         if (wm == null || coverShown) return;
         if (cover == null) {
-            cover = HomeWeb.create(this, false, null, night -> {});
+            cover = HomeWeb.create(this, false, null, null, night -> {});
         } else {
             cover.evaluateJavascript("window.goHome && window.goHome(); window.onResumed && window.onResumed()", null);
         }

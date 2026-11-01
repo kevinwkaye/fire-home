@@ -25,7 +25,8 @@
             android:clearTaskOnLaunch="true"
             android:resumeWhilePausing="true"
             android:screenOrientation="sensorLandscape"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|keyboard|navigation">
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|keyboard|navigation"
+            android:windowSoftInputMode="adjustPan">
             <intent-filter android:priority="1000">
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.HOME" />
@@ -33,6 +34,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".XboxSignIn"
+            android:exported="false"
+            android:label="Sign in to Xbox"
+            android:screenOrientation="sensorLandscape"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|keyboard"
+            android:windowSoftInputMode="adjustResize" />
 
         <service
             android:name=".NightDream"

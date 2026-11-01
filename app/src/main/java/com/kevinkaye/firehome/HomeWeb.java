@@ -29,7 +29,7 @@ final class HomeWeb {
     private HomeWeb() {}
 
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
-    static WebView create(Context context, boolean dream, SamsungTv tv, NightListener listener) {
+    static WebView create(Context context, boolean dream, SamsungTv tv, XboxLive xbox, NightListener listener) {
         WebView web = new WebView(context);
         web.setBackgroundColor(Color.BLACK);
         web.setVerticalScrollBarEnabled(false);
@@ -97,10 +97,39 @@ final class HomeWeb {
             @JavascriptInterface public void tvForget() { if (tv != null) { tv.forget(); tv.connect(); } }
 
             @JavascriptInterface public boolean tvConnected() { return tv != null && tv.isConnected(); }
+
+            @JavascriptInterface public boolean xboxSignedIn() { return xbox != null && xbox.signedIn(); }
+
+            @JavascriptInterface public void xboxSignIn() {
+                main.post(() -> {
+                    Intent i = new Intent(context, XboxSignIn.class);
+                    if (!(context instanceof android.app.Activity)) i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(i);
+                });
+            }
+
+            @JavascriptInterface public void xboxSignOut() { if (xbox != null) xbox.signOut(); }
+
+            @JavascriptInterface public void xboxConnect() { if (xbox != null) xbox.connect(); }
+
+            @JavascriptInterface public void xboxKey(String k) { if (xbox != null) xbox.key(k); }
+
+            @JavascriptInterface public void xboxMedia(String c) { if (xbox != null) xbox.media(c); }
+
+            @JavascriptInterface public void xboxText(String s) { if (xbox != null) xbox.text(s); }
+
+            @JavascriptInterface public void xboxPower() { if (xbox != null) xbox.power(); }
         }, "Host");
 
         web.loadUrl("file:///android_asset/index.html" + (dream ? "#night" : ""));
         return web;
+    }
+
+    /** Push an Xbox status change into the page. */
+    static void pushXbox(WebView web, String state, String detail) {
+        if (web == null) return;
+        String js = "window.onXboxStatus && window.onXboxStatus(" + JSONObject.quote(state) + "," + JSONObject.quote(detail == null ? "" : detail) + ")";
+        web.post(() -> web.evaluateJavascript(js, null));
     }
 
     /** Push a TV status change into the page. */

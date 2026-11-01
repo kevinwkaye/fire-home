@@ -10,14 +10,26 @@ import android.webkit.WebView;
 /** The home screen. Registered as a launcher so the Home button always lands here. */
 public class MainActivity extends Activity {
 
+    private static MainActivity current;
     private WebView web;
     private SamsungTv tv;
+    private XboxLive xbox;
+
+    /** Sign-in finished (code may be null if it was cancelled). */
+    static void onXboxCode(String code) {
+        MainActivity a = current;
+        if (a == null || a.xbox == null) return;
+        if (code == null) a.xbox.connect();
+        else a.xbox.finishSignIn(code);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        current = this;
         tv = new SamsungTv(this, (state, detail) -> HomeWeb.pushStatus(web, state, detail));
-        web = HomeWeb.create(this, false, tv, night -> {
+        xbox = new XboxLive(this, (state, detail) -> HomeWeb.pushXbox(web, state, detail));
+        web = HomeWeb.create(this, false, tv, xbox, night -> {
             WindowManager.LayoutParams lp = getWindow().getAttributes();
             lp.screenBrightness = night ? 0.05f : WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
             getWindow().setAttributes(lp);
@@ -62,6 +74,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         if (tv != null) tv.close();
+        if (current == this) current = null;
         if (web != null) {
             web.destroy();
             web = null;
