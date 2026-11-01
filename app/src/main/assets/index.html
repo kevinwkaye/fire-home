@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Fire Home</title>
+<style>
+:root {
+  --bg: #050505;
+  --card: #1b1b1b;
+  --hinge: #000;
+  --ink: #f3f0e8;
+  --panel: #141414;
+  --edge: #2a2a2a;
+  --muted: #a0a0a6;
+  --accent: #f2a33a;
+  --power: #ff6b5e;
+  --blob: #4d5bff;
+  --blob-shade: #2329a8;
+  --drip: #a98bff;
+  --drip-shade: #5b3fc4;
+  --bean: #ff4f9a;
+  --eye: #ffffff;
+  --face-ink: #0b0b12;
+  --digits: "Roboto Condensed", "sans-serif-condensed", "Arial Narrow", sans-serif;
+  color-scheme: dark;
+}
+* { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); overflow: hidden; font-family: var(--digits); -webkit-user-select: none; user-select: none; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; outline: none; touch-action: manipulation; }
+
+/* A fixed 1024x600 stage, scaled to fit whatever the screen really is. */
+#stage { position: absolute; left: 50%; top: 50%; width: 1024px; height: 600px; transform-origin: 0 0; }
+.screen { position: absolute; inset: 0; display: none; overflow: hidden; }
+.screen.on { display: block; }
+
+/* Flip cards */
+.card { position: relative; background: var(--card); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 700; line-height: 1; overflow: hidden; }
+.card::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 3px; margin-top: -1.5px; background: var(--hinge); }
+.card span { display: block; }
+.card.flip span { animation: flip .42s cubic-bezier(.3, .7, .4, 1); }
+@keyframes flip { 0% { transform: scaleY(.15); opacity: .3; } 100% { transform: none; opacity: 1; } }
+.small { height: 54px; border-radius: 10px; font-size: 30px; letter-spacing: 3px; }
+.small::after { height: 2px; margin-top: -1px; }
+.colon { display: flex; flex-direction: column; align-items: center; }
+.colon i { display: block; border-radius: 50%; background: var(--accent); }
+
+/* Home */
+#home .left { position: absolute; left: 0; top: 0; width: 724px; height: 600px; display: flex; flex-direction: column; align-items: center; padding-top: 34px; gap: 18px; }
+.daterow { display: flex; gap: 10px; }
+.clock { display: flex; gap: 12px; align-items: center; }
+#home .digit { width: 132px; height: 200px; font-size: 184px; font-weight: 800; }
+#home .colon { width: 30px; gap: 30px; }
+#home .colon i { width: 14px; height: 14px; }
+#home nav { position: absolute; right: 36px; top: 34px; bottom: 36px; width: 264px; display: flex; flex-direction: column; gap: 16px; }
+.app { flex: 1 1 0; border-radius: 18px; background: var(--panel); border: 1px solid var(--edge); display: flex; align-items: center; gap: 18px; padding: 0 26px; font-size: 28px; font-weight: 700; letter-spacing: 1px; transition: transform .12s, background .12s; }
+.app:active, .pad-btn:active, .key:active { transform: scale(.96); background: #1f1f1f; }
+.app svg { width: 38px; height: 38px; flex: none; }
+.slot { position: absolute; bottom: 0; }
+#home .slot { left: 212px; width: 300px; }
+#remote .slot { left: 64px; width: 152px; }
+#night .slot { left: 397px; width: 230px; opacity: .6; }
+
+/* Remote */
+#remote header { position: absolute; left: 40px; right: 40px; top: 28px; height: 56px; display: flex; align-items: center; justify-content: space-between; }
+.pill { height: 48px; padding: 0 18px 0 12px; border-radius: 24px; background: var(--panel); border: 1px solid var(--edge); display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; }
+.tabs { display: flex; padding: 4px; border-radius: 28px; background: var(--panel); border: 1px solid var(--edge); }
+.tabs button { height: 48px; padding: 0 30px; border-radius: 24px; font-size: 20px; font-weight: 700; }
+.tabs button[aria-pressed="true"] { background: var(--accent); color: var(--bg); }
+.round { width: 56px; height: 56px; border-radius: 28px; background: var(--panel); border: 1px solid var(--edge); display: flex; align-items: center; justify-content: center; }
+#status { position: absolute; left: 0; right: 0; top: 92px; text-align: center; font-size: 16px; font-weight: 500; color: var(--muted); height: 20px; transition: opacity .6s; }
+#status.done { opacity: 0; }
+#status.warn { color: var(--accent); }
+.rgrid { position: absolute; left: 40px; right: 40px; top: 120px; bottom: 32px; display: grid; grid-template-columns: 200px 1fr 200px; gap: 32px; align-items: center; }
+.col { display: flex; flex-direction: column; gap: 14px; }
+.key { height: 64px; border-radius: 16px; background: var(--panel); border: 1px solid var(--edge); font-size: 20px; font-weight: 700; display: flex; align-items: center; justify-content: center; transition: transform .12s, background .12s; }
+.dpad { position: relative; width: 340px; height: 340px; border-radius: 170px; background: var(--panel); border: 1px solid var(--edge); margin: 0 auto; }
+.pad-btn { position: absolute; display: flex; align-items: center; justify-content: center; border-radius: 20px; transition: transform .12s, background .12s; }
+.pad-btn.up { left: 120px; top: 10px; width: 100px; height: 90px; }
+.pad-btn.down { left: 120px; bottom: 10px; width: 100px; height: 90px; }
+.pad-btn.l { left: 10px; top: 120px; width: 90px; height: 100px; }
+.pad-btn.r { right: 10px; top: 120px; width: 90px; height: 100px; }
+.ok { position: absolute; left: 105px; top: 105px; width: 130px; height: 130px; border-radius: 65px; background: var(--accent); color: var(--bg); font-size: 26px; font-weight: 800; transition: transform .12s; }
+.ok:active { transform: scale(.94); }
+.right { display: flex; gap: 16px; justify-content: center; }
+.rocker { width: 88px; height: 300px; border-radius: 44px; background: var(--panel); border: 1px solid var(--edge); display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px 0; }
+.rocker button { width: 72px; height: 72px; border-radius: 36px; font-size: 34px; font-weight: 700; }
+.rocker button:active { background: #1f1f1f; }
+.rocker span { font-size: 14px; font-weight: 700; letter-spacing: 2px; color: var(--muted); }
+.stack { display: flex; flex-direction: column; gap: 16px; justify-content: center; }
+.circle { width: 88px; height: 88px; border-radius: 44px; background: var(--panel); border: 1px solid var(--edge); display: flex; align-items: center; justify-content: center; }
+.circle:active, .round:active, .pill:active { background: #1f1f1f; }
+
+/* Night */
+#night { background: #000; color: #8a8a90; }
+#night .inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; padding-top: 40px; gap: 28px; }
+#night .card { background: #0e0e10; }
+#night .card::after { background: #000; }
+#night .digit { width: 170px; height: 260px; font-size: 228px; font-weight: 800; border-radius: 18px; }
+#night .clock { gap: 16px; }
+#night .colon { width: 36px; gap: 38px; }
+#night .colon i { width: 16px; height: 16px; background: #5a3a12; }
+#batt { position: absolute; top: 24px; right: 32px; display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 500; color: #6a6a70; }
+
+/* Character (from Flip Fella) */
+.buddy { width: 100%; pointer-events: auto; }
+.buddy svg { display: block; width: 100%; height: auto; overflow: visible; }
+.bob { animation: bob 4.6s ease-in-out infinite; transform-origin: 100px 170px; }
+@keyframes bob { 50% { transform: translateY(3px) scale(1.02, .975); } }
+.eye { transform-box: fill-box; transform-origin: center; transition: transform .09s; }
+.pupil { transition: transform .35s cubic-bezier(.3, 1.6, .5, 1); }
+.closed, .m-open, .m-sleep, .zzz { opacity: 0; }
+.buddy.blink .eye { transform: scaleY(.06); }
+.buddy.look .pupil { transform: translate(-6px, -7px); }
+.buddy.lookr .pupil { transform: translate(6px, -4px); }
+.buddy.happy .bob { animation: hop .55s cubic-bezier(.3, 0, .4, 1) 3; }
+.buddy.nudge .bob { animation: hop .45s cubic-bezier(.3, 0, .4, 1) 1; }
+.buddy.happy .m-smile { opacity: 0; }
+.buddy.happy .m-open { opacity: 1; }
+.buddy.happy .pupil { transform: translateY(-3px); }
+@keyframes hop {
+  0%, 100% { transform: none; }
+  30% { transform: translateY(4px) scale(1.1, .88); }
+  60% { transform: translateY(-18px) scale(.92, 1.08); }
+}
+.buddy.asleep .open-eyes, .buddy.asleep .m-smile { opacity: 0; }
+.buddy.asleep .closed, .buddy.asleep .m-sleep { opacity: 1; }
+.buddy.asleep .bob { animation-duration: 7s; }
+.buddy.asleep .zzz { animation: zzz 6s ease-in-out infinite; }
+.buddy.asleep .zzz:nth-of-type(2) { animation-delay: 2s; }
+.buddy.asleep .zzz:nth-of-type(3) { animation-delay: 4s; }
+@keyframes zzz {
+  0% { opacity: 0; transform: translate(0, 0) scale(.6); }
+  25% { opacity: .9; }
+  100% { opacity: 0; transform: translate(14px, -46px) scale(1.15); }
+}
+.zzz { transform-box: fill-box; transform-origin: center; font-family: var(--digits); font-weight: 700; fill: var(--ink); }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <section id="home" class="screen" aria-label="Home">
+    <div class="left">
+      <div class="daterow">
+        <div class="card small" style="width:116px"><span id="h-day">SUN</span></div>
+        <div class="card small" style="width:80px"><span id="h-date">01</span></div>
+        <div class="card small" style="width:116px"><span id="h-mon">NOV</span></div>
+      </div>
+      <div class="clock">
+        <div class="card digit"><span id="h-h1">0</span></div>
+        <div class="card digit"><span id="h-h2">0</span></div>
+        <div class="colon"><i></i><i></i></div>
+        <div class="card digit"><span id="h-m1">0</span></div>
+        <div class="card digit"><span id="h-m2">0</span></div>
+      </div>
+      <div class="slot" data-slot="home"></div>
+    </div>
+    <nav aria-label="Apps">
+      <button class="app" id="go-kindle" type="button">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></svg>
+        KINDLE</button>
+      <button class="app" id="go-tv" type="button">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        TV</button>
+      <button class="app" id="go-xbox" type="button">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12a4 4 0 0 1 3.9 4.9l-1.2 5.2a2.4 2.4 0 0 1-4.2 1L14.6 17H9.4l-1.9 2.1a2.4 2.4 0 0 1-4.2-1l-1.2-5.2A4 4 0 0 1 6 8z"/><path d="M7.5 11.5v3M6 13h3"/><circle cx="16" cy="12" r="0.6"/><circle cx="17.8" cy="14" r="0.6"/></svg>
+        XBOX</button>
+    </nav>
+  </section>
+
+  <section id="remote" class="screen" aria-label="Remote">
+    <header>
+      <button class="pill" id="back" type="button" aria-label="Back to home">
+        <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        <span id="r-time">00:00</span></button>
+      <div class="tabs" role="group" aria-label="Control">
+        <button type="button" id="tab-tv" aria-pressed="true">TV</button>
+        <button type="button" id="tab-xbox" aria-pressed="false">Xbox</button>
+      </div>
+      <button class="round" id="power" type="button" aria-label="Power">
+        <svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--power)" stroke-width="2.2" stroke-linecap="round"><path d="M12 3v8"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg>
+      </button>
+    </header>
+    <div id="status" role="status"></div>
+    <div class="rgrid">
+      <div class="col">
+        <button class="key" type="button" data-key="KEY_RETURN">Back</button>
+        <button class="key" type="button" data-key="KEY_HOME">Home</button>
+        <button class="key" type="button" data-key="KEY_MENU" id="menu-key">Menu</button>
+        <button class="key" type="button" id="playpause" aria-label="Play or pause">
+          <svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M5 4l9 8-9 8z"/><rect x="16" y="5" width="2.6" height="14" rx="1"/><rect x="20" y="5" width="2.6" height="14" rx="1"/></svg>
+        </button>
+      </div>
+      <div class="dpad">
+        <button class="pad-btn up" type="button" data-key="KEY_UP" data-repeat aria-label="Up"><svg aria-hidden="true" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></button>
+        <button class="pad-btn down" type="button" data-key="KEY_DOWN" data-repeat aria-label="Down"><svg aria-hidden="true" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+        <button class="pad-btn l" type="button" data-key="KEY_LEFT" data-repeat aria-label="Left"><svg aria-hidden="true" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+        <button class="pad-btn r" type="button" data-key="KEY_RIGHT" data-repeat aria-label="Right"><svg aria-hidden="true" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+        <button class="ok" type="button" data-key="KEY_ENTER">OK</button>
+      </div>
+      <div class="right">
+        <div class="rocker">
+          <button type="button" data-key="KEY_VOLUP" data-repeat aria-label="Volume up">+</button>
+          <span>VOL</span>
+          <button type="button" data-key="KEY_VOLDOWN" data-repeat aria-label="Volume down">&#8722;</button>
+        </div>
+        <div class="stack">
+          <button class="circle" type="button" data-key="KEY_MUTE" aria-label="Mute"><svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H3v6h3l5 4z"/><path d="M22 9l-6 6M16 9l6 6"/></svg></button>
+          <button class="circle" type="button" data-key="KEY_SOURCE" aria-label="Source"><svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M12 9v5M9.5 11.5L12 14l2.5-2.5"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="slot" data-slot="remote"></div>
+  </section>
+
+  <section id="night" class="screen" aria-label="Night clock">
+    <div id="batt"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg><span id="batt-pct"></span></div>
+    <div class="inner">
+      <div class="daterow">
+        <div class="card small" style="width:120px"><span id="n-day">SUN</span></div>
+        <div class="card small" style="width:84px"><span id="n-date">01</span></div>
+        <div class="card small" style="width:120px"><span id="n-mon">NOV</span></div>
+      </div>
+      <div class="clock">
+        <div class="card digit"><span id="n-h1">0</span></div>
+        <div class="card digit"><span id="n-h2">0</span></div>
+        <div class="colon"><i></i><i></i></div>
+        <div class="card digit"><span id="n-m1">0</span></div>
+        <div class="card digit"><span id="n-m2">0</span></div>
+      </div>
+    </div>
+    <div class="slot" data-slot="night"></div>
+  </section>
+
+  <div class="buddy" id="buddy" role="button" aria-label="Character, tap to swap">
+    <svg id="buddy-svg" viewBox="26 6 150 108" preserveAspectRatio="xMidYMin meet" xmlns="http://www.w3.org/2000/svg">
+      <text class="zzz" x="158" y="40" font-size="22">z</text>
+      <text class="zzz" x="166" y="30" font-size="17">z</text>
+      <text class="zzz" x="154" y="44" font-size="26">Z</text>
+      <g class="bob">
+        <g class="char" data-c="pebble">
+          <path id="blob-shadow" fill="var(--blob-shade)" transform="translate(7 9)"/>
+          <path id="blob" fill="var(--blob)"/>
+          <g class="open-eyes">
+            <g class="eye"><circle cx="78" cy="88" r="17" fill="var(--eye)"/><circle class="pupil" cx="80" cy="91" r="8.5" fill="var(--face-ink)"/></g>
+            <g class="eye"><circle cx="122" cy="88" r="17" fill="var(--eye)"/><circle class="pupil" cx="124" cy="91" r="8.5" fill="var(--face-ink)"/></g>
+          </g>
+          <g class="closed" fill="none" stroke="var(--face-ink)" stroke-width="6" stroke-linecap="round">
+            <path d="M66 92 Q78 101 90 92"/><path d="M110 92 Q122 101 134 92"/>
+          </g>
+          <path class="m-smile" d="M90 120 Q100 130 110 120" fill="none" stroke="var(--face-ink)" stroke-width="6" stroke-linecap="round"/>
+          <path class="m-open" d="M86 117 H114 Q114 138 100 138 Q86 138 86 117 Z" fill="var(--face-ink)" stroke="var(--face-ink)" stroke-width="3" stroke-linejoin="round"/>
+          <path class="m-sleep" d="M94 124 H106" stroke="var(--face-ink)" stroke-width="6" stroke-linecap="round"/>
+        </g>
+        <g class="char" data-c="drip" display="none">
+          <path id="drip-shadow" fill="var(--drip-shade)" transform="translate(7 9)"/>
+          <path id="drip" fill="var(--drip)"/>
+          <g class="open-eyes">
+            <g class="eye"><circle cx="100" cy="76" r="26" fill="var(--eye)"/><circle class="pupil" cx="103" cy="80" r="13" fill="var(--face-ink)"/></g>
+          </g>
+          <path class="closed" d="M78 82 Q100 98 122 82" fill="none" stroke="var(--face-ink)" stroke-width="6" stroke-linecap="round"/>
+          <ellipse class="m-smile" cx="100" cy="120" rx="7" ry="8.5" fill="var(--face-ink)"/>
+          <path class="m-open" d="M86 113 H114 Q114 136 100 136 Q86 136 86 113 Z" fill="var(--face-ink)" stroke="var(--face-ink)" stroke-width="3" stroke-linejoin="round"/>
+          <path class="m-sleep" d="M94 122 H106" stroke="var(--face-ink)" stroke-width="6" stroke-linecap="round"/>
+        </g>
+        <g class="char" data-c="bean" display="none">
+          <g transform="rotate(-12 100 92)">
+            <ellipse cx="108" cy="100" rx="58" ry="72" fill="none" stroke="var(--ink)" stroke-width="4"/>
+            <ellipse cx="100" cy="92" rx="58" ry="72" fill="var(--bean)"/>
+          </g>
+          <g class="open-eyes">
+            <g class="eye"><circle cx="82" cy="84" r="16" fill="var(--eye)"/><circle class="pupil" cx="89" cy="84" r="8" fill="var(--face-ink)"/></g>
+            <g class="eye"><circle cx="120" cy="78" r="16" fill="var(--eye)"/><circle class="pupil" cx="127" cy="78" r="8" fill="var(--face-ink)"/></g>
+          </g>
+          <g class="closed" fill="none" stroke="var(--face-ink)" stroke-width="6" stroke-linecap="round">
+            <path d="M70 88 Q82 96 94 87"/><path d="M108 82 Q120 89 132 79"/>
+          </g>
+          <path class="m-smile" d="M86 120 Q102 128 116 110" fill="none" stroke="var(--face-ink)" stroke-width="6" stroke-linecap="round"/>
+          <path class="m-open" d="M86 112 H118 Q117 136 102 136 Q87 135 86 112 Z" fill="var(--face-ink)" stroke="var(--face-ink)" stroke-width="3" stroke-linejoin="round"/>
+          <path class="m-sleep" d="M94 120 H108" stroke="var(--face-ink)" stroke-width="6" stroke-linecap="round"/>
+        </g>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  const Host = window.Host || null;
+  const isDream = !!(Host && Host.isDream && Host.isDream()) || location.hash === "#night";
+  const $ = (id) => document.getElementById(id);
+
+  /* ---------- Fit the 1024x600 stage to the screen ---------- */
+  const stage = $("stage");
+  function fit() {
+    const s = Math.min(window.innerWidth / 1024, window.innerHeight / 600);
+    stage.style.transform = "scale(" + s + ") translate(-50%, -50%)";
+  }
+  window.addEventListener("resize", fit);
+  fit();
+
+  /* ---------- Screens ---------- */
+  const buddy = $("buddy");
+  let screen = "home";
+  function show(name) {
+    screen = name;
+    document.querySelectorAll(".screen").forEach((s) => s.classList.toggle("on", s.id === name));
+    const slot = document.querySelector('[data-slot="' + name + '"]');
+    if (slot) slot.appendChild(buddy);
+    buddy.classList.toggle("asleep", name === "night");
+    if (name === "remote" && Host) { Host.tvConnect(); refreshStatus(); }
+    if (name === "night") battery();
+  }
+  window.goHome = () => { if (!isDream) show("home"); };
+  window.onResumed = () => { tick(true); if (screen === "remote" && Host) Host.tvConnect(); };
+
+  /* ---------- Clock ---------- */
+  const DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+  const MONS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+  function set(id, v, animate) {
+    const el = $(id);
+    if (!el || el.textContent === v) return;
+    el.textContent = v;
+    if (!animate) return;
+    const card = el.parentElement;
+    card.classList.remove("flip");
+    void card.offsetWidth;
+    card.classList.add("flip");
+  }
+  let lastNight = null;
+  function tick(force) {
+    const d = new Date();
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    const vals = { h1: hh[0], h2: hh[1], m1: mm[0], m2: mm[1], day: DAYS[d.getDay()], date: String(d.getDate()).padStart(2, "0"), mon: MONS[d.getMonth()] };
+    for (const p of ["h", "n"]) for (const k in vals) set(p + "-" + k, vals[k], !force);
+    $("r-time").textContent = hh + ":" + mm;
+    const night = d.getHours() >= 22 || d.getHours() < 7;
+    if (isDream && night !== lastNight) {
+      lastNight = night;
+      try { Host && Host.setNight(night); } catch (e) {}
+    }
+  }
+  tick(true);
+  setInterval(() => tick(false), 1000);
+
+  function battery() {
+    try {
+      const b = JSON.parse(Host.battery());
+      $("batt-pct").textContent = b.pct >= 0 ? b.pct + "%" : "";
+      $("batt").style.display = b.charging ? "flex" : "none";
+    } catch (e) { $("batt").style.display = "none"; }
+  }
+  if (isDream) setInterval(battery, 60000);
+
+  /* ---------- Home buttons ---------- */
+  $("go-kindle").addEventListener("click", () => { cheer(); Host && Host.openKindle(); });
+  $("go-tv").addEventListener("click", () => { setMode("tv", false); show("remote"); });
+  $("go-xbox").addEventListener("click", () => { setMode("xbox", true); show("remote"); });
+  // Long press on the clock opens Android settings (the only way back into them).
+  let lp;
+  document.querySelector("#home .clock").addEventListener("touchstart", () => { lp = setTimeout(() => Host && Host.openSettings(), 1500); }, { passive: true });
+  ["touchend", "touchmove", "touchcancel"].forEach((ev) => document.querySelector("#home .clock").addEventListener(ev, () => clearTimeout(lp), { passive: true }));
+
+  /* ---------- Remote ---------- */
+  let mode = "tv";
+  function setMode(m, sendKey) {
+    mode = m;
+    $("tab-tv").setAttribute("aria-pressed", String(m === "tv"));
+    $("tab-xbox").setAttribute("aria-pressed", String(m === "xbox"));
+    $("menu-key").textContent = m === "xbox" ? "Guide" : "Menu";
+    if (sendKey) key(m === "xbox" ? "KEY_HDMI1" : "KEY_TV");
+  }
+  $("tab-tv").addEventListener("click", () => setMode("tv", true));
+  $("tab-xbox").addEventListener("click", () => setMode("xbox", true));
+  $("back").addEventListener("click", () => show("home"));
+  $("power").addEventListener("click", () => { nudge(); Host && Host.tvPower(); });
+
+  function key(k) { nudge(); try { Host && Host.tvKey(k); } catch (e) {} }
+
+  let playing = true;
+  $("playpause").addEventListener("click", () => { key(playing ? "KEY_PAUSE" : "KEY_PLAY"); playing = !playing; });
+
+  // Keys: tap sends once; data-repeat keys repeat while held.
+  document.querySelectorAll("[data-key]").forEach((b) => {
+    let t1, t2;
+    const stop = () => { clearTimeout(t1); clearInterval(t2); };
+    b.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      key(b.dataset.key);
+      if (b.hasAttribute("data-repeat")) {
+        t1 = setTimeout(() => { t2 = setInterval(() => { try { Host && Host.tvKey(b.dataset.key); } catch (err) {} }, 160); }, 450);
+      }
+    });
+    ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => b.addEventListener(ev, stop));
+  });
+
+  /* ---------- TV status ---------- */
+  const status = $("status");
+  const MESSAGES = {
+    searching: ["Looking for your TV", ""],
+    connecting: ["Connecting to your TV", ""],
+    allow: ["Press Allow on your TV if it asks", "warn"],
+    connected: ["Connected", "done"],
+    notfound: ["Can't find the TV. Is it on? Tap here to try again", "warn"],
+    offline: ["TV is off or asleep. Tap power to wake it, or tap here to retry", "warn"],
+    denied: ["The TV blocked Fire Home. Allow it under TV Settings > General > External Device Manager, then tap here", "warn"]
+  };
+  window.onTvStatus = (state) => {
+    const m = MESSAGES[state] || ["", ""];
+    status.textContent = m[0];
+    status.className = m[1];
+    if (state === "connected") cheer();
+  };
+  function refreshStatus() { if (Host && Host.tvConnected()) window.onTvStatus("connected"); }
+  status.addEventListener("click", () => { if (Host) Host.tvForget(); });
+
+  /* ---------- Character (ported from Flip Fella) ---------- */
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function flash(cls, ms) { buddy.classList.add(cls); setTimeout(() => buddy.classList.remove(cls), ms); }
+  function cheer() { if (!buddy.classList.contains("asleep")) flash("happy", 2000); }
+  let nudging = false;
+  function nudge() {
+    if (nudging || buddy.classList.contains("asleep")) return;
+    nudging = true;
+    flash("nudge", 450);
+    setTimeout(() => { nudging = false; }, 460);
+  }
+  function blinkLoop() {
+    setTimeout(() => {
+      if (!buddy.classList.contains("asleep") && !buddy.classList.contains("happy")) {
+        flash("blink", 140);
+        if (Math.random() < .25) setTimeout(() => flash("blink", 120), 260);
+        if (Math.random() < .2) flash(Math.random() < .5 ? "look" : "lookr", 1500);
+      }
+      blinkLoop();
+    }, 2500 + Math.random() * 4500);
+  }
+
+  const blob = $("blob"), shadow = $("blob-shadow"), drip = $("drip"), dripShadow = $("drip-shadow");
+  const N = 8, CX = 100, CY = 98, RX = 74, RY = 64;
+  const ph = Array.from({ length: N }, () => Math.random() * Math.PI * 2);
+  const sp = Array.from({ length: N }, () => .5 + Math.random() * .6);
+  const slowness = () => buddy.classList.contains("asleep") ? .45 : 1;
+  function blobPath(t) {
+    const slow = slowness();
+    const pts = [];
+    for (let i = 0; i < N; i++) {
+      const a = i / N * Math.PI * 2 - Math.PI / 2;
+      const r = 1 + .055 * Math.sin(t * sp[i] * slow + ph[i]) + .025 * Math.sin(t * 1.7 * slow + ph[i] * 2);
+      const flat = a > 0 && a < Math.PI ? .94 : 1;
+      pts.push([CX + Math.cos(a) * RX * r, CY + Math.sin(a) * RY * r * flat]);
+    }
+    let d = "M" + pts[0][0].toFixed(1) + " " + pts[0][1].toFixed(1);
+    for (let i = 0; i < N; i++) {
+      const p0 = pts[(i - 1 + N) % N], p1 = pts[i], p2 = pts[(i + 1) % N], p3 = pts[(i + 2) % N];
+      const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+      const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+      d += " C" + c1[0].toFixed(1) + " " + c1[1].toFixed(1) + " " + c2[0].toFixed(1) + " " + c2[1].toFixed(1) + " " + p2[0].toFixed(1) + " " + p2[1].toFixed(1);
+    }
+    return d + "Z";
+  }
+  function dripPath(t) {
+    const slow = slowness() * .9;
+    const hb = 134;
+    let d = "M34 88 C34 46 62 18 100 18 C138 18 166 46 166 88 L166 " + hb;
+    for (let k = 0; k < 4; k++) {
+      const x0 = 166 - 33 * k, x1 = x0 - 33;
+      const dep = 22 + 9 * Math.sin(t * .8 * slow + k * 1.7);
+      d += " C" + x0 + " " + (hb + dep).toFixed(1) + " " + x1 + " " + (hb + dep).toFixed(1) + " " + x1 + " " + hb;
+    }
+    return d + "Z";
+  }
+
+  const CHARS = ["pebble", "drip", "bean"];
+  const CROPS = { pebble: [26, 6, 150, 108], drip: [34, 10, 134, 100], bean: [41, 14, 122, 90] };
+  const buddySvg = $("buddy-svg");
+  let current = "pebble";
+  try {
+    const saved = (Host && Host.getCharacter && Host.getCharacter()) || localStorage.getItem("firehome-char");
+    if (CHARS.includes(saved)) current = saved;
+  } catch (e) {}
+
+  let lastDraw = 0;
+  function drawBlob(now) {
+    // Fewer frames on this little tablet: about 15 fps is plenty for a slow wobble.
+    if (now - lastDraw > 66) {
+      lastDraw = now;
+      const t = now / 1000;
+      if (current === "pebble") { const d = blobPath(t); blob.setAttribute("d", d); shadow.setAttribute("d", d); }
+      else if (current === "drip") { const d = dripPath(t); drip.setAttribute("d", d); dripShadow.setAttribute("d", d); }
+    }
+    if (!reduce) requestAnimationFrame(drawBlob);
+  }
+  function setChar(c, save) {
+    current = c;
+    const [x, y, w, h] = CROPS[c];
+    buddySvg.setAttribute("viewBox", x + " " + y + " " + w + " " + h);
+    buddy.querySelectorAll(".char").forEach((g) => g.setAttribute("display", g.dataset.c === c ? "inline" : "none"));
+    lastDraw = 0;
+    if (!save) return;
+    try { Host && Host.setCharacter(c); } catch (e) {}
+    try { localStorage.setItem("firehome-char", c); } catch (e) {}
+    cheer();
+  }
+  buddy.addEventListener("click", () => {
+    if (isDream) return;
+    setChar(CHARS[(CHARS.indexOf(current) + 1) % CHARS.length], true);
+  });
+
+  setChar(current, false);
+  requestAnimationFrame(drawBlob);
+  blinkLoop();
+  show(isDream ? "night" : "home");
+})();
+</script>
+</body>
+</html>
