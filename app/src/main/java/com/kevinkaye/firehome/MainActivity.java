@@ -35,6 +35,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        HomeHijack.homeVisible();
         if (web != null) web.evaluateJavascript("window.onResumed && window.onResumed()", null);
     }
 
