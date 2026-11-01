@@ -257,7 +257,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     <nav aria-label="Apps">
       <button class="app" id="go-kindle" type="button">
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></svg>
-        <span>KINDLE<span class="sub" id="kindle-sub">+ Lofi Girl on TV</span></span></button>
+        <span>KINDLE<span class="sub" id="kindle-sub">+ Flip Fella on TV</span></span></button>
       <button class="app" id="go-tv" type="button">
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
         TV</button>
@@ -277,7 +277,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
         <p id="after-p">You've closed Kindle. Bedtime turns off the TV and Xbox and dims the tablet.</p>
         <div class="row">
           <button class="go" type="button" id="after-bed"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>Bedtime</button>
-          <button type="button" id="after-stop">Just stop the lofi</button>
+          <button type="button" id="after-stop">Just stop the music</button>
           <button class="later" type="button" id="after-no">Not yet</button>
         </div>
       </div>
@@ -410,16 +410,12 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
     </header>
     <div class="sgrid">
       <section class="card2">
-        <h2>KINDLE + LOFI GIRL</h2>
-        <div class="srow">Play lofi on the TV when I open Kindle<button class="toggle" type="button" role="switch" id="t-lofi" aria-checked="true" aria-label="Play lofi with Kindle"></button></div>
-        <div class="srow">Lofi volume
+        <h2>KINDLE + FLIP FELLA TV</h2>
+        <div class="srow">Open Flip Fella on the TV with Kindle<button class="toggle" type="button" role="switch" id="t-lofi" aria-checked="true" aria-label="Open Flip Fella on the TV with Kindle"></button></div>
+        <div class="srow">Music volume
           <div class="step"><button class="pm" type="button" id="v-down" aria-label="Quieter">&#8722;</button><output id="v-val">8</output><button class="pm" type="button" id="v-up" aria-label="Louder">+</button><button type="button" id="v-test">Test</button></div>
         </div>
-        <div class="srow">Pick my YouTube profile for me<button class="toggle" type="button" role="switch" id="t-profile" aria-checked="true" aria-label="Pick my YouTube profile"></button></div>
-        <div class="srow" id="pos-row">My profile, from the left
-          <div class="step"><button class="pm" type="button" id="p-down" aria-label="Move left">&#8722;</button><output id="p-val" style="width: 56px">1st</output><button class="pm" type="button" id="p-up" aria-label="Move right">+</button></div>
-        </div>
-        <p class="note">Hold the Kindle button on the home screen to read without music.</p>
+        <p class="note">Flip Fella plays lofi radio through the TV and soundbar. Hold the Kindle button on the home screen to read without it.</p>
       </section>
       <div class="stack2">
         <section class="card2">
@@ -671,10 +667,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   function loadSettings() {
     try { settings = Object.assign(settings, JSON.parse(Host.getSettings())); } catch (e) {}
     $("t-lofi").setAttribute("aria-checked", String(settings.lofiOn));
-    $("t-profile").setAttribute("aria-checked", String(settings.lofiProfile));
     $("v-val").textContent = settings.lofiVolume;
-    $("p-val").textContent = ORD[settings.profilePos - 1] || "1st";
-    $("pos-row").style.opacity = settings.lofiProfile ? "1" : ".4";
     $("s-ver").textContent = settings.version;
     $("kindle-sub").style.display = settings.lofiOn ? "" : "none";
     const signed = !!(Host && Host.xboxSignedIn && Host.xboxSignedIn());
@@ -683,11 +676,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   }
   $("s-back").addEventListener("click", () => show("home"));
   $("t-lofi").addEventListener("click", () => { settings.lofiOn = !settings.lofiOn; Host && Host.setLofiOn(settings.lofiOn); loadSettings(); });
-  $("t-profile").addEventListener("click", () => { settings.lofiProfile = !settings.lofiProfile; Host && Host.setLofiProfile(settings.lofiProfile); loadSettings(); });
   function vol(d) { settings.lofiVolume = Math.max(0, Math.min(40, settings.lofiVolume + d)); $("v-val").textContent = settings.lofiVolume; Host && Host.setLofiVolume(settings.lofiVolume); }
-  function pos(d) { settings.profilePos = Math.max(1, Math.min(6, settings.profilePos + d)); $("p-val").textContent = ORD[settings.profilePos - 1]; Host && Host.setProfilePos(settings.profilePos); }
-  $("p-down").addEventListener("click", () => pos(-1));
-  $("p-up").addEventListener("click", () => pos(1));
   $("v-down").addEventListener("click", () => vol(-1));
   $("v-up").addEventListener("click", () => vol(1));
   $("v-test").addEventListener("click", () => Host && Host.testVolume());
@@ -703,14 +692,14 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   window.afterReading = (late) => {
     show("home");
     after.classList.toggle("day", !late);
-    $("after-h").textContent = late ? "Done for the night?" : "Stop the lofi?";
-    $("after-p").textContent = late ? "You've closed Kindle. Bedtime turns off the TV and Xbox and dims the tablet." : "You've closed Kindle. Lofi Girl is still playing on the TV.";
+    $("after-h").textContent = late ? "Done for the night?" : "Stop the music?";
+    $("after-p").textContent = late ? "You've closed Kindle. Bedtime turns off the TV and Xbox and dims the tablet." : "You've closed Kindle. Flip Fella is still playing lofi on the TV.";
     after.classList.add("on");
     home.classList.add("after");
     if (late) buddy.classList.add("asleep"); else nudge();
   };
   $("after-bed").addEventListener("click", () => { closeAfter(); Host && Host.bedtime(); show("night"); });
-  $("after-stop").addEventListener("click", () => { closeAfter(); showToast("Stopping the lofi"); Host && Host.stopLofi(); });
+  $("after-stop").addEventListener("click", () => { closeAfter(); showToast("Closing Flip Fella on the TV"); Host && Host.stopLofi(); });
   $("after-no").addEventListener("click", closeAfter);
 
   /* ---------- Battery + helper check ---------- */

@@ -358,6 +358,45 @@ final class SamsungTv {
         repeat("KEY_VOLUP", Math.max(0, level), 160);
     }
 
+    /** Open a TV app by its Tizen app ID (works for sideloaded apps too). */
+    boolean launchAppId(String appId) {
+        String ip = ip();
+        if (ip == null) return false;
+        try {
+            Request req = new Request.Builder().url("http://" + ip + ":" + PORT + "/api/v2/applications/" + appId)
+                    .post(RequestBody.create(new byte[0], null)).build();
+            try (Response r = http.newCall(req).execute()) {
+                if (r.isSuccessful()) return true;
+            }
+        } catch (Exception ignored) {}
+        if (!connected || socket == null) return false;
+        try {
+            for (String type : new String[]{"NATIVE_LAUNCH", "DEEP_LINK"}) {
+                JSONObject data = new JSONObject().put("appId", appId).put("action_type", type);
+                JSONObject msg = new JSONObject().put("method", "ms.channel.emit")
+                        .put("params", new JSONObject().put("event", "ed.apps.launch").put("to", "host").put("data", data));
+                socket.send(msg.toString());
+                sleep(500);
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /** Close a TV app by ID, falling back to the Return key (which closes Flip Fella). */
+    void closeAppId(String appId) {
+        String ip = ip();
+        boolean ok = false;
+        if (ip != null) {
+            try (Response r = http.newCall(new Request.Builder()
+                    .url("http://" + ip + ":" + PORT + "/api/v2/applications/" + appId).delete().build()).execute()) {
+                ok = r.isSuccessful();
+            } catch (Exception ignored) {}
+        }
+        if (!ok && connected) send("KEY_RETURN");
+    }
+
     /** Open an installed TV app whose name contains the given text (case-insensitive). */
     boolean launchApp(String nameContains) {
         if (!connected || socket == null) return false;

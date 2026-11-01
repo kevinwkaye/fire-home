@@ -5,13 +5,7 @@ import android.content.SharedPreferences;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 /** One-tap routines that drive the TV and Xbox together. */
 final class Routines {
@@ -20,17 +14,14 @@ final class Routines {
         void show(String text);
     }
 
-    /** Lofi Girl's channel: we look up whichever live stream is running right now. */
-    private static final String LOFI_CHANNEL_LIVE = "https://www.youtube.com/channel/UCSJ4gkVC6NrvII8umztf0Ow/live";
-    private static final String LOFI_FALLBACK = "jfKfPfyJRdk";
+    /** The Flip Fella TV app (kwkaye84-coder/flip-fella-tv), which plays lofi radio itself. */
+    private static final String TV_CLOCK_APP = "FlpFella01.FlipFellaTV";
 
     private final SharedPreferences prefs;
     private final SamsungTv tv;
     private final XboxLive xbox;
     private final Toast toast;
     private final ExecutorService run = Executors.newSingleThreadExecutor();
-    private final OkHttpClient http = new OkHttpClient.Builder()
-            .connectTimeout(6, TimeUnit.SECONDS).readTimeout(8, TimeUnit.SECONDS).build();
 
     Routines(Context ctx, SamsungTv tv, XboxLive xbox, Toast toast) {
         this.prefs = ctx.getSharedPreferences("firehome", Context.MODE_PRIVATE);
@@ -41,29 +32,18 @@ final class Routines {
 
     int lofiVolume() { return prefs.getInt("lofi_volume", 8); }
 
-    int profilePosition() { return prefs.getInt("lofi_profile_pos", 1); }
 
-    /** Kindle has just opened: put Lofi Girl on the TV at a quiet level. */
+    /** Kindle has just opened: open Flip Fella on the TV, which plays lofi radio, at a quiet level. */
     void lofi() {
         if (!prefs.getBoolean("lofi_on", true)) return;
         run.execute(() -> {
-            toast.show("Starting Lofi Girl on the TV");
+            toast.show("Opening Flip Fella on the TV");
             boolean wasOn = tv.isConnected();
-            if (!tv.ensureOn(30_000)) { toast.show("Couldn't reach the TV for lofi"); return; }
+            if (!tv.ensureOn(30_000)) { toast.show("Couldn't reach the TV"); return; }
             if (!wasOn) sleep(3000); // let a freshly woken TV settle before sending keys
             tv.setVolume(lofiVolume());
-            String id = liveVideoId();
-            if (!tv.playYouTube(id)) { toast.show("The TV didn't accept the YouTube request"); return; }
-            if (prefs.getBoolean("lofi_profile", true)) {
-                // Wait until the TV says YouTube is actually running, then for the profile screen to draw.
-                long end = System.currentTimeMillis() + 25_000;
-                while (System.currentTimeMillis() < end && !tv.youTubeRunning()) sleep(700);
-                sleep(wasOn ? 4500 : 6500);
-                // Go to the first profile, step right to Kevin's, and choose it.
-                tv.repeat("KEY_LEFT", 6, 250);
-                tv.repeat("KEY_RIGHT", Math.max(0, profilePosition() - 1), 400);
-                sleep(300);
-                tv.send("KEY_ENTER");
+            if (!tv.launchAppId(TV_CLOCK_APP) && !tv.launchApp("Flip Fella")) {
+                toast.show("Couldn't open Flip Fella on the TV");
             }
         });
     }
@@ -71,7 +51,7 @@ final class Routines {
     void stopLofi() {
         run.execute(() -> {
             if (!tv.isConnected() && !tv.ensureOn(6_000)) return;
-            tv.stopYouTube();
+            tv.closeAppId(TV_CLOCK_APP);
         });
     }
 
@@ -107,24 +87,6 @@ final class Routines {
             if (!tv.ensureOn(20_000)) { toast.show("Couldn't reach the TV"); return; }
             if (!tv.launchApp(name)) toast.show("Couldn't find " + name + " on the TV");
         });
-    }
-
-    private String liveVideoId() {
-        try {
-            Request req = new Request.Builder().url(LOFI_CHANNEL_LIVE)
-                    .header("User-Agent", "Mozilla/5.0 (Linux; Android 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36")
-                    .header("Accept-Language", "en-GB,en;q=0.9")
-                    .header("Cookie", "CONSENT=YES+1; SOCS=CAI")
-                    .build();
-            try (Response r = http.newCall(req).execute()) {
-                String html = r.body() == null ? "" : r.body().string();
-                Matcher m = Pattern.compile("<link rel=\"canonical\" href=\"https://www\\.youtube\\.com/watch\\?v=([A-Za-z0-9_-]{11})").matcher(html);
-                if (m.find()) return m.group(1);
-                m = Pattern.compile("\"videoId\":\"([A-Za-z0-9_-]{11})\"").matcher(html);
-                if (m.find()) return m.group(1);
-            }
-        } catch (Exception ignored) {}
-        return LOFI_FALLBACK;
     }
 
     private static void sleep(long ms) {
