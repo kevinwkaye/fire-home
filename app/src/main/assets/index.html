@@ -156,7 +156,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 #settings header { display: flex; align-items: center; gap: 18px; height: 48px; }
 #settings h1 { margin: 0; font-size: 30px; font-weight: 800; letter-spacing: 1px; }
 .sgrid { position: absolute; left: 40px; right: 40px; top: 98px; bottom: 32px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
-.card2 { border-radius: 18px; background: var(--panel); border: 1px solid var(--edge); padding: 22px 24px; display: flex; flex-direction: column; gap: 16px; }
+.card2 { border-radius: 18px; background: var(--panel); border: 1px solid var(--edge); padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; }
 .card2 h2 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: 1px; color: var(--accent); }
 .srow { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 19px; font-weight: 700; }
 .srow small { font-size: 16px; font-weight: 500; color: var(--muted); }
@@ -416,6 +416,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
           <div class="step"><button class="pm" type="button" id="v-down" aria-label="Quieter">&#8722;</button><output id="v-val">8</output><button class="pm" type="button" id="v-up" aria-label="Louder">+</button><button type="button" id="v-test">Test</button></div>
         </div>
         <div class="srow">Pick my YouTube profile for me<button class="toggle" type="button" role="switch" id="t-profile" aria-checked="true" aria-label="Pick my YouTube profile"></button></div>
+        <div class="srow" id="pos-row">My profile, from the left
+          <div class="step"><button class="pm" type="button" id="p-down" aria-label="Move left">&#8722;</button><output id="p-val" style="width: 56px">1st</output><button class="pm" type="button" id="p-up" aria-label="Move right">+</button></div>
+        </div>
         <p class="note">Hold the Kindle button on the home screen to read without music.</p>
       </section>
       <div class="stack2">
@@ -663,12 +666,15 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   window.showToast = showToast;
 
   /* ---------- Settings ---------- */
-  let settings = { lofiOn: true, lofiVolume: 8, lofiProfile: true, version: "" };
+  let settings = { lofiOn: true, lofiVolume: 8, lofiProfile: true, profilePos: 1, version: "" };
+  const ORD = ["1st", "2nd", "3rd", "4th", "5th", "6th"];
   function loadSettings() {
     try { settings = Object.assign(settings, JSON.parse(Host.getSettings())); } catch (e) {}
     $("t-lofi").setAttribute("aria-checked", String(settings.lofiOn));
     $("t-profile").setAttribute("aria-checked", String(settings.lofiProfile));
     $("v-val").textContent = settings.lofiVolume;
+    $("p-val").textContent = ORD[settings.profilePos - 1] || "1st";
+    $("pos-row").style.opacity = settings.lofiProfile ? "1" : ".4";
     $("s-ver").textContent = settings.version;
     $("kindle-sub").style.display = settings.lofiOn ? "" : "none";
     const signed = !!(Host && Host.xboxSignedIn && Host.xboxSignedIn());
@@ -679,6 +685,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   $("t-lofi").addEventListener("click", () => { settings.lofiOn = !settings.lofiOn; Host && Host.setLofiOn(settings.lofiOn); loadSettings(); });
   $("t-profile").addEventListener("click", () => { settings.lofiProfile = !settings.lofiProfile; Host && Host.setLofiProfile(settings.lofiProfile); loadSettings(); });
   function vol(d) { settings.lofiVolume = Math.max(0, Math.min(40, settings.lofiVolume + d)); $("v-val").textContent = settings.lofiVolume; Host && Host.setLofiVolume(settings.lofiVolume); }
+  function pos(d) { settings.profilePos = Math.max(1, Math.min(6, settings.profilePos + d)); $("p-val").textContent = ORD[settings.profilePos - 1]; Host && Host.setProfilePos(settings.profilePos); }
+  $("p-down").addEventListener("click", () => pos(-1));
+  $("p-up").addEventListener("click", () => pos(1));
   $("v-down").addEventListener("click", () => vol(-1));
   $("v-up").addEventListener("click", () => vol(1));
   $("v-test").addEventListener("click", () => Host && Host.testVolume());

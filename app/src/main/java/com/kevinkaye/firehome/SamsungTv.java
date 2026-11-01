@@ -404,6 +404,20 @@ final class SamsungTv {
         return null;
     }
 
+    /** True once the TV reports YouTube as running (DIAL app state). */
+    boolean youTubeRunning() {
+        String ip = ip();
+        if (ip == null) return false;
+        String base = prefs.getString("tv_dial", "http://" + ip + ":8080/ws/apps/");
+        if (!base.endsWith("/")) base += "/";
+        try (Response r = http.newCall(new Request.Builder().url(base + "YouTube").build()).execute()) {
+            String body = r.body() == null ? "" : r.body().string();
+            return body.contains("<state>running</state>");
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     /** Close YouTube on the TV (DIAL stop), falling back to the Exit key. */
     void stopYouTube() {
         String ip = ip();

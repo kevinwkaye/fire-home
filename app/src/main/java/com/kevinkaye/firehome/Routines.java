@@ -41,17 +41,28 @@ final class Routines {
 
     int lofiVolume() { return prefs.getInt("lofi_volume", 8); }
 
+    int profilePosition() { return prefs.getInt("lofi_profile_pos", 1); }
+
     /** Kindle has just opened: put Lofi Girl on the TV at a quiet level. */
     void lofi() {
         if (!prefs.getBoolean("lofi_on", true)) return;
         run.execute(() -> {
             toast.show("Starting Lofi Girl on the TV");
-            if (!tv.ensureOn(25_000)) { toast.show("Couldn't reach the TV for lofi"); return; }
+            boolean wasOn = tv.isConnected();
+            if (!tv.ensureOn(30_000)) { toast.show("Couldn't reach the TV for lofi"); return; }
+            if (!wasOn) sleep(3000); // let a freshly woken TV settle before sending keys
             tv.setVolume(lofiVolume());
             String id = liveVideoId();
             if (!tv.playYouTube(id)) { toast.show("The TV didn't accept the YouTube request"); return; }
             if (prefs.getBoolean("lofi_profile", true)) {
-                sleep(7000);
+                // Wait until the TV says YouTube is actually running, then for the profile screen to draw.
+                long end = System.currentTimeMillis() + 25_000;
+                while (System.currentTimeMillis() < end && !tv.youTubeRunning()) sleep(700);
+                sleep(wasOn ? 4500 : 6500);
+                // Go to the first profile, step right to Kevin's, and choose it.
+                tv.repeat("KEY_LEFT", 6, 250);
+                tv.repeat("KEY_RIGHT", Math.max(0, profilePosition() - 1), 400);
+                sleep(300);
                 tv.send("KEY_ENTER");
             }
         });

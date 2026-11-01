@@ -105,6 +105,7 @@ final class HomeWeb {
                     o.put("lofiOn", prefs.getBoolean("lofi_on", true));
                     o.put("lofiVolume", prefs.getInt("lofi_volume", 8));
                     o.put("lofiProfile", prefs.getBoolean("lofi_profile", true));
+                    o.put("profilePos", prefs.getInt("lofi_profile_pos", 1));
                     o.put("version", updater == null ? "" : updater.installedName());
                 } catch (Exception ignored) {}
                 return o.toString();
@@ -113,6 +114,8 @@ final class HomeWeb {
             @JavascriptInterface public void setLofiOn(boolean on) { prefs.edit().putBoolean("lofi_on", on).apply(); }
 
             @JavascriptInterface public void setLofiProfile(boolean on) { prefs.edit().putBoolean("lofi_profile", on).apply(); }
+
+            @JavascriptInterface public void setProfilePos(int v) { prefs.edit().putInt("lofi_profile_pos", Math.max(1, Math.min(6, v))).apply(); }
 
             @JavascriptInterface public void setLofiVolume(int v) { prefs.edit().putInt("lofi_volume", Math.max(0, Math.min(40, v))).apply(); }
 
