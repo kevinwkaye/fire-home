@@ -682,7 +682,6 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   $("v-down").addEventListener("click", () => vol(-1));
   $("v-up").addEventListener("click", () => vol(1));
   $("v-test").addEventListener("click", () => Host && Host.testVolume());
-  $("s-check").addEventListener("click", () => { $("s-upd").textContent = "Checking"; Host && Host.checkUpdate(); });
   $("s-xsign").addEventListener("click", () => {
     if (!Host) return;
     if (Host.xboxSignedIn()) { Host.xboxSignOut(); loadSettings(); } else Host.xboxSignIn();
@@ -728,12 +727,34 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   }
 
   /* ---------- Updates ---------- */
+  let updState = "none";
   window.onUpdate = (state, detail) => {
-    $("updpill").classList.toggle("on", state === "ready");
-    $("s-upd").textContent = state === "ready" ? "Update ready" : state === "downloading" ? "Downloading" : detail;
-    if (state === "error") showToast(detail);
-    if (state === "downloading") showToast("Downloading the update");
+    updState = state;
+    const btn = $("s-check"), note = $("s-upd"), pill = $("updpill");
+    pill.classList.toggle("on", state === "ready" || state === "downloading");
+    if (state === "ready") {
+      btn.textContent = "Install " + (detail || "update");
+      note.textContent = "Ready to install";
+      pill.textContent = "Install update";
+    } else if (state === "downloading") {
+      btn.textContent = "Downloading " + (detail || 0) + "%";
+      note.textContent = "";
+      pill.textContent = "Downloading " + (detail || 0) + "%";
+    } else if (state === "checking") {
+      btn.textContent = "Checking";
+      note.textContent = "";
+    } else {
+      btn.textContent = "Check for updates";
+      note.textContent = detail || "";
+      if (state === "error") showToast(detail);
+    }
   };
+  function updateTap() {
+    if (!Host) return;
+    if (updState === "ready" || updState === "downloading") Host.installUpdate();
+    else Host.checkUpdate();
+  }
+  $("s-check").addEventListener("click", updateTap);
   $("updpill").addEventListener("click", () => Host && Host.installUpdate());
 
   /* ---------- Xbox ---------- */
