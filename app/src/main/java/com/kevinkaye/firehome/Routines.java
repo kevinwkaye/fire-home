@@ -37,6 +37,8 @@ final class Routines {
     void lofi() {
         if (!prefs.getBoolean("lofi_on", true)) return;
         run.execute(() -> {
+            // Already playing from earlier? Leave the TV (and its volume) alone.
+            if (tv.connectWait(4_000) && tv.appRunning(TV_CLOCK_APP)) return;
             toast.show("Opening Flip Fella on the TV");
             boolean wasOn = tv.isConnected();
             if (!tv.ensureOn(30_000)) { toast.show("Couldn't reach the TV"); return; }

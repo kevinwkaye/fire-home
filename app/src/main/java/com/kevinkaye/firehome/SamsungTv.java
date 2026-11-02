@@ -396,6 +396,20 @@ final class SamsungTv {
         }
     }
 
+    /** True if the TV says this app is running and on screen. */
+    boolean appRunning(String appId) {
+        String ip = ip();
+        if (ip == null) return false;
+        try (Response r = http.newCall(new Request.Builder()
+                .url("http://" + ip + ":" + PORT + "/api/v2/applications/" + appId).build()).execute()) {
+            if (!r.isSuccessful() || r.body() == null) return false;
+            JSONObject o = new JSONObject(r.body().string());
+            return o.optBoolean("running", false) && o.optBoolean("visible", true);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     /** Close a TV app by ID, falling back to the Return key (which closes Flip Fella). */
     void closeAppId(String appId) {
         String ip = ip();
