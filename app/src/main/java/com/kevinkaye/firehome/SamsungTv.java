@@ -343,6 +343,18 @@ final class SamsungTv {
         return connected;
     }
 
+    /** Reconnect if the link has dropped, without trying to wake the TV. */
+    boolean connectWait(long timeoutMs) {
+        if (connected) return true;
+        connect();
+        long end = System.currentTimeMillis() + timeoutMs;
+        while (System.currentTimeMillis() < end) {
+            if (connected) return true;
+            sleep(300);
+        }
+        return connected;
+    }
+
     /** Send a key several times with a gap, e.g. to set the volume. */
     void repeat(String key, int times, long gapMs) {
         for (int i = 0; i < times && connected; i++) {

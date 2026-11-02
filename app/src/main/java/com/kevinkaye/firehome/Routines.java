@@ -78,7 +78,12 @@ final class Routines {
     void bedtime() {
         run.execute(() -> {
             if (xbox.signedIn()) xbox.off();
-            if (tv.isConnected()) tv.send("KEY_POWER");
+            if (tv.connectWait(8_000)) {
+                sleep(300);
+                tv.send("KEY_POWER");
+            } else {
+                toast.show("The TV looks like it's already off");
+            }
         });
     }
 
